@@ -8,7 +8,6 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  //Khai báo biến cục bộ
   TextEditingController phoneTextController =TextEditingController();
   TextEditingController nameTextController =TextEditingController();
 
@@ -33,56 +32,52 @@ class _SignupScreenState extends State<SignupScreen> {
                 ), 
                 ),
                 
-              // field nhập
                 Padding(
                   padding:const EdgeInsets.all(22) ,
                   child: Column(
                     children: [
-                      // Ô Nhập số điện thoại 
                       TextField(
                         controller: phoneTextController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText:"Số điện thoại" ,
-                          labelStyle: TextStyle(color: Colors.white), // Màu chữ cho label
+                          labelStyle: TextStyle(color: Colors.white), 
                           enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1), // Viền khi không được chọn
+                          borderSide: BorderSide(color: Colors.white, width: 1), 
                           ),
                           focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1), // Viền khi được chọn
+                          borderSide: BorderSide(color: Colors.white, width: 1),
                           ),
                           border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1), // Viền mặc định
+                          borderSide: BorderSide(color: Colors.white, width: 1), 
                           ),
                           ),
-                        style: TextStyle(color: Colors.white), // Màu chữ khi nhập
+                        style: TextStyle(color: Colors.white), 
                         ),
 
                       SizedBox(height: 20),
 
-                      // Ô nhấp Mật khẩu
                        TextField(
                         controller: nameTextController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText:"Họ và Tên" ,
-                          labelStyle: TextStyle(color: Colors.white), // Màu chữ cho label
+                          labelStyle: TextStyle(color: Colors.white), 
                           enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1), // Viền khi không được chọn
+                          borderSide: BorderSide(color: Colors.white, width: 1), 
                           ),
                           focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1), // Viền khi được chọn
+                          borderSide: BorderSide(color: Colors.white, width: 1), 
                           ),
                           border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1), // Viền mặc định
+                          borderSide: BorderSide(color: Colors.white, width: 1), 
                           ),
                           ),
-                        style: TextStyle(color: Colors.white), // Màu chữ khi nhập
+                        style: TextStyle(color: Colors.white), 
                         ), 
                     ],
                   ),
                 )
-                 
             ],
           )
         )
