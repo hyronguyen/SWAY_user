@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sway/ui/Authentication/login.dart';
+import 'package:sway/page/authentication/login.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
 
 class SetPasswordScreen extends StatefulWidget {

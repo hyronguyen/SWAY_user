@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sway/ui/Onboarding/welcome.dart';
+import 'package:sway/page/onboarding/welcome.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnboardingStart extends StatefulWidget {
