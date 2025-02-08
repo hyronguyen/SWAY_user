@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:sway/ui/Onboarding/onboarding.dart';
+import 'package:sway/page/onboarding/onboarding.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
 import 'package:sway/methods/common_methods.dart';
-import 'package:sway/ui/Authentication/signup_password.dart';
+import 'package:sway/page/authentication/signup_password.dart';
 
 class SignupPhoneVerifyScreen extends StatefulWidget {
   ////////////////////////////// BIẾN WIDGET  ////////////////////////////////////////////////////////

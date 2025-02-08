@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sway/Controller/user_controller.dart';
-import 'package:sway/ui/Authentication/login.dart';
-import 'package:sway/ui/Authentication/signup_phone_verify.dart';
+import 'package:sway/page/authentication/login.dart';
+import 'package:sway/page/authentication/signup_phone_verify.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
