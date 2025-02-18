@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 
 class ContactScreen extends StatefulWidget {
+  const ContactScreen({super.key});
+
   @override
   _ContactScreenState createState() => _ContactScreenState();
 }
@@ -89,6 +91,12 @@ class _ContactScreenState extends State<ContactScreen> {
                 onPressed: () {
                   // Handle form submission
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 child: Container(
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(vertical: 16),
@@ -101,12 +109,6 @@ class _ContactScreenState extends State<ContactScreen> {
                     ),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                   backgroundColor: Colors.amber,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
               ),
               SizedBox(height: 20),
             ],
@@ -116,7 +118,8 @@ class _ContactScreenState extends State<ContactScreen> {
     );
   }
 
-  Widget _buildTextField(String hint, TextEditingController controller, {int maxLines = 1}) {
+  Widget _buildTextField(String hint, TextEditingController controller,
+      {int maxLines = 1}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[900],
@@ -169,7 +172,8 @@ class _ContactScreenState extends State<ContactScreen> {
               decoration: InputDecoration(
                 hintText: 'Số điện thoại',
                 hintStyle: TextStyle(color: Colors.grey[600]),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: InputBorder.none,
               ),
             ),

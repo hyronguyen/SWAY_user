@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-
-class DriverRatingScreen extends StatefulWidget { 
+class DriverRatingScreen extends StatefulWidget {
   const DriverRatingScreen({super.key});
 
   @override
@@ -12,7 +11,7 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
   int rating = 5;
   int? selectedTipAmount;
   final TextEditingController _reviewController = TextEditingController();
-  
+
   final List<int> tipAmounts = [1, 2, 5, 10, 20];
 
   @override
@@ -60,7 +59,8 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.star, color: Colors.amber, size: 16),
+                              const Icon(Icons.star,
+                                  color: Colors.amber, size: 16),
                               const SizedBox(width: 4),
                               Text(
                                 '4.9 (531 reviews)',
@@ -81,7 +81,7 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Rating stars
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -110,7 +110,7 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Review text field
               Container(
                 decoration: BoxDecoration(
@@ -135,42 +135,46 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Tip section
               const Text(
                 'Tip cho bác tài',
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               const SizedBox(height: 16),
-              
+
               // Tip amount buttons
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   ...tipAmounts.map((amount) => InkWell(
-                    onTap: () {
-                      setState(() {
-                        selectedTipAmount = amount;
-                      });
-                    },
-                    child: Container(
-                      width: 70,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: selectedTipAmount == amount ? Colors.amber : Colors.grey[900],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '\$$amount',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: selectedTipAmount == amount ? Colors.black : Colors.white,
-                          fontWeight: FontWeight.bold,
+                        onTap: () {
+                          setState(() {
+                            selectedTipAmount = amount;
+                          });
+                        },
+                        child: Container(
+                          width: 70,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: selectedTipAmount == amount
+                                ? Colors.amber
+                                : Colors.grey[900],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '\$$amount',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: selectedTipAmount == amount
+                                  ? Colors.black
+                                  : Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  )).toList(),
+                      )),
                   InkWell(
                     onTap: () {
                       // Handle custom amount
@@ -195,7 +199,7 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
                 ],
               ),
               const SizedBox(height: 32),
-              
+
               // Submit button
               SizedBox(
                 width: double.infinity,

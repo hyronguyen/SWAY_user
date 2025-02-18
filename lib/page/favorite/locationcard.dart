@@ -5,10 +5,10 @@ class LocationCard extends StatelessWidget {
   final String address;
 
   const LocationCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.address,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -60,14 +60,14 @@ class LocationCard extends StatelessWidget {
             ),
           ),
           Container(
-            padding: EdgeInsets.all(5),  // Khoảng cách xung quanh biểu tượng
+            padding: EdgeInsets.all(5), // Khoảng cách xung quanh biểu tượng
             decoration: BoxDecoration(
-              color: Colors.red,  // Màu nền đỏ
-              shape: BoxShape.circle,  // Để làm nền hình tròn
+              color: Colors.red, // Màu nền đỏ
+              shape: BoxShape.circle, // Để làm nền hình tròn
             ),
             child: Icon(
-              Icons.remove,  // Biểu tượng dấu trừ
-              size: 18,       // Kích thước biểu tượng
+              Icons.remove, // Biểu tượng dấu trừ
+              size: 18, // Kích thước biểu tượng
               color: Colors.white, // Màu sắc của biểu tượng (trắng)
             ),
           )

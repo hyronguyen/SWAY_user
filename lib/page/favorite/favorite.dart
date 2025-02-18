@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sway/page/favorite/locationcard.dart';
 
 class FavoriteScreen extends StatelessWidget {
-  const FavoriteScreen({Key? key}) : super(key: key);
+  const FavoriteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
