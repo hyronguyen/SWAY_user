@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DeleteAccountScreen extends StatelessWidget {
-  const DeleteAccountScreen({Key? key}) : super(key: key);
+  const DeleteAccountScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

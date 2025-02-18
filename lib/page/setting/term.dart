@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class TermsScreen extends StatelessWidget {
+  const TermsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,7 +76,7 @@ class TermsScreen extends StatelessWidget {
         style: TextStyle(color: Colors.white70, fontSize: 16),
         children: [
           TextSpan(
-            text: title + ' ',
+            text: '$title ',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w500,

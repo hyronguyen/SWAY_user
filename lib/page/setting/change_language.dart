@@ -15,13 +15,20 @@ class LanguageModel {
 }
 
 class LanguageSelectionScreen extends StatefulWidget {
+  const LanguageSelectionScreen({super.key});
+
   @override
-  _LanguageSelectionScreenState createState() => _LanguageSelectionScreenState();
+  _LanguageSelectionScreenState createState() =>
+      _LanguageSelectionScreenState();
 }
 
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   final List<LanguageModel> languages = [
-    LanguageModel(name: 'English', nativeName: 'English', flagCode: 'us', isSelected: true),
+    LanguageModel(
+        name: 'English',
+        nativeName: 'English',
+        flagCode: 'us',
+        isSelected: true),
     LanguageModel(name: 'Hindi', nativeName: 'Hindi', flagCode: 'in'),
     LanguageModel(name: 'Arabic', nativeName: 'Arabic', flagCode: 'ae'),
     LanguageModel(name: 'French', nativeName: 'French', flagCode: 'fr'),
@@ -59,7 +66,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: ListTile(
-                    leading: Container(
+                    leading: SizedBox(
                       width: 30,
                       height: 20,
                       child: Image.asset(
@@ -104,7 +111,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                 // Handle save language selection
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber, // Updated from primary to backgroundColor
+                backgroundColor:
+                    Colors.amber, // Updated from primary to backgroundColor
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

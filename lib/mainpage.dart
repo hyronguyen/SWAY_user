@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sway/page/favorite/favorite.dart';
 import 'package:sway/page/home/home.dart';
+import 'package:sway/page/walletscreen/wallet_screen.dart';
 import 'page/defaultwidget.dart';
 
 class Mainpage extends StatefulWidget {
@@ -12,13 +13,13 @@ class Mainpage extends StatefulWidget {
 
 class _MainpageState extends State<Mainpage> {
   int _selectedIndex = 0;
-  
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
-  
+
   // Hàm này trả về tên cho AppBar title và widget tương ứng
   _loadWidget(int index) {
     String nameWidgets = "Trang chủ";
@@ -31,7 +32,7 @@ class _MainpageState extends State<Mainpage> {
         return const FavoriteScreen();
       case 2:
         nameWidgets = "Ví";
-        break;
+        return const WalletScreen();
       case 3:
         nameWidgets = "Khuyến mãi";
         break;
@@ -58,12 +59,12 @@ class _MainpageState extends State<Mainpage> {
             height: 40,
             width: 40,
             decoration: BoxDecoration(
-              color: Colors.amber[600], 
-              borderRadius: BorderRadius.circular(8), 
+              color: Colors.amber[600],
+              borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
-              icon: Icon(Icons.menu, size: 24), 
-              color: Colors.black, 
+              icon: Icon(Icons.menu, size: 24),
+              color: Colors.black,
               onPressed: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -71,42 +72,48 @@ class _MainpageState extends State<Mainpage> {
           ),
         ),
         title: Text(
-          _selectedIndex == 0 ? '' :
-          _selectedIndex == 1 ? 'Yêu thích' :
-          _selectedIndex == 2 ? 'Ví' :
-          _selectedIndex == 3 ? 'Khuyến mãi' :
-          _selectedIndex == 4 ? 'Hồ sơ' : '',
+          _selectedIndex == 0
+              ? ''
+              : _selectedIndex == 1
+                  ? 'Yêu thích'
+                  : _selectedIndex == 2
+                      ? 'Ví'
+                      : _selectedIndex == 3
+                          ? 'Khuyến mãi'
+                          : _selectedIndex == 4
+                              ? 'Hồ sơ'
+                              : '',
           style: TextStyle(color: Colors.white),
         ),
         actions: <Widget>[
           Container(
-            height: 40, 
-            width: 40,  
+            height: 40,
+            width: 40,
             decoration: BoxDecoration(
-              color: Colors.amber[600], 
-              borderRadius: BorderRadius.circular(8), 
+              color: Colors.amber[600],
+              borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
-              icon: Icon(Icons.search, size: 24), 
-              color: Colors.black, 
+              icon: Icon(Icons.search, size: 24),
+              color: Colors.black,
               onPressed: () {},
             ),
           ),
           SizedBox(width: 16),
           Container(
-            height: 40, 
-            width: 40,  
+            height: 40,
+            width: 40,
             decoration: BoxDecoration(
-              color: Colors.amber[600], 
-              borderRadius: BorderRadius.circular(8), 
+              color: Colors.amber[600],
+              borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
-              icon: Icon(Icons.notifications, size: 24), 
-              color: Colors.black, 
+              icon: Icon(Icons.notifications, size: 24),
+              color: Colors.black,
               onPressed: () {},
             ),
-          ),    
-          SizedBox(width: 16),             
+          ),
+          SizedBox(width: 16),
         ],
       ),
       extendBodyBehindAppBar: true,
@@ -130,8 +137,10 @@ class _MainpageState extends State<Mainpage> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    Text('Nguyễn Hoàng Nghĩa', style: TextStyle(color: Colors.white)),
-                    Text("22DH112363@st.huflit.edu.vn", style: TextStyle(color: Colors.white)),
+                    Text('Nguyễn Hoàng Nghĩa',
+                        style: TextStyle(color: Colors.white)),
+                    Text("22DH112363@st.huflit.edu.vn",
+                        style: TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
