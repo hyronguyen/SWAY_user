@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -15,6 +16,52 @@ class _HomeScreenState extends State<HomeScreen> {
   final MapController _mapController = MapController();
   final TextEditingController _addressController = TextEditingController();
   LatLng? _selectedLocation;
+  List<Map<String, dynamic>> _availableDrivers = [];
+
+  Future<void> _findNearbyDrivers(LatLng userLocation) async {
+    final double searchRadius = 5.0; // Bán kính 1km
+    final Distance distance = Distance(); // Thư viện tính khoảng cách
+
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('AVAILABLE_DRIVERS')
+          .where('status', isEqualTo: 'available') // Chỉ lấy tài xế rảnh
+          .get();
+
+        debugPrint("🔥 Lấy danh sách tài xế từ Firestore:");
+    for (var doc in snapshot.docs) {
+      debugPrint("📌 Tài xế ID: ${doc.id} | Dữ liệu: ${doc.data()}");
+    }
+
+      List<Map<String, dynamic>> nearbyDrivers = [];
+
+      for (var doc in snapshot.docs) {
+        double driverLat = doc['latitude'];
+        double driverLng = doc['longitude'];
+
+        LatLng driverLocation = LatLng(driverLat, driverLng);
+        double kmDistance = distance.as(LengthUnit.Kilometer, userLocation, driverLocation);
+
+        if (kmDistance <= searchRadius) {
+          nearbyDrivers.add({
+            'id': doc.id,
+            'latitude': driverLat,
+            'longitude': driverLng,
+            'distance': kmDistance,
+          });
+        }
+      }
+
+      setState(() {
+        _availableDrivers = nearbyDrivers;
+      });
+
+      debugPrint("👱 Tìm thấy ${nearbyDrivers.length} tài xế gần đó.");
+    } catch (e) {
+      debugPrint("Lỗi tìm tài xế: $e");
+    }
+  }
+
 
   Future<void> _getAddressFromLatLng(LatLng latLng) async {
     try {
@@ -25,7 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
         
         // Loại bỏ dấu ",,," dư thừa
         address = address.replaceAll(RegExp(r',\s*,+'), ',').trim();
-        
+        debugPrint(" 🚩 Địa chỉ: $address");
+        _findNearbyDrivers(latLng);
+
         setState(() {
           _addressController.text = address;
         });
@@ -53,7 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // Lấy tọa độ vị trí hiện tại
     Position position = await Geolocator.getCurrentPosition();
     LatLng latLng = LatLng(position.latitude, position.longitude);
-
+  
+  
     setState(() {
       _selectedLocation = latLng;
     });
