@@ -374,15 +374,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         return;
                       }
                       
-                      // Kiểm tra số điện thoại đã được đăng ký chưa
-                      if (await userController.checkExistPhone(fullPhoneNumber)) 
-                      {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Số điện thoại đã tồn tại!")),
-                        );
-                        return;
-                      }
+
                       
                       if (!context.mounted) return;
                       Navigator.push(
