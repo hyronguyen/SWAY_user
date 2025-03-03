@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sway/page/favorite/favorite.dart';
 import 'package:sway/page/home/home.dart';
+import 'package:sway/page/setting/setting_main.dart';
 import 'package:sway/page/walletscreen/wallet_screen.dart';
 import 'page/defaultwidget.dart';
 
@@ -38,7 +39,7 @@ class _MainpageState extends State<Mainpage> {
         break;
       case 4:
         nameWidgets = "Hồ sơ";
-        break;
+        return const SettingsScreen();
       default:
         nameWidgets = "None";
         break;

@@ -30,11 +30,11 @@ class WelcomeScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 10), // Khoảng cách giữa tiêu đề và subtitle
+                const SizedBox(height: 8), // Khoảng cách giữa tiêu đề và subtitle
 
                 // Subtitle Hân hạnh được phục vụ bạn
                 const Text(
-                  'Hân hạnh được phục vụ bạn',
+                  'Tận hưởng những chuyến đi tuyệt vời cùng chúng tôi',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey,
@@ -46,7 +46,7 @@ class WelcomeScreen extends StatelessWidget {
           
           // Phần chứa các nút sẽ nằm dưới cùng
           Padding(
-            padding: const EdgeInsets.all(20.0), // Khoảng cách giữa các nút và cạnh dưới
+            padding: const EdgeInsets.all(32.0), // Khoảng cách giữa các nút và cạnh dưới
             child: Column(
               children: <Widget>[
                 // Nút Đăng nhập
@@ -127,6 +127,7 @@ class WelcomeScreen extends StatelessWidget {
                     child: const Text('Đăng ký', style: TextStyle(fontSize: 16)),
                   ),
                 ),
+                const SizedBox(height: 20), // Khoảng cách giữa hai nút
               ],
             ),
           ),
