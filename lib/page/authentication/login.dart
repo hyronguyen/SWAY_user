@@ -9,7 +9,7 @@ class LoginScreen extends StatelessWidget {
   ////////////////////////////// BIẾN WIDGETS  ////////////////////////////////////////////////////////
   final TextEditingController emailController = TextEditingController(); // Changed to emailController
   final TextEditingController passwordController = TextEditingController();
-  final Usercontroller userController = Usercontroller(); // Khởi tạo Usercontroller
+  final UserController userController = UserController(); // Khởi tạo Usercontroller
 
   LoginScreen({super.key});
 

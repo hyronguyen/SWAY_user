@@ -1,30 +1,45 @@
 class User {
-  int? id;
-  String? name;
-  String? mail;
+  String? fullname;
+  String? email;
   String? phone;
   String? password;
   String? gender;
+  String? birthday;  // Đổi thành String thay vì DateTime
+  String? avarta;
 
-  User({this.id, this.name, this.mail, this.phone, this.password, this.gender});
-  
-  User.fromJson(Map<String, dynamic> json){
-    id = json["id"];
-    name = json["name"];
-    mail = json["mail"];
+  User({
+    this.fullname,
+    this.email,
+    this.phone,
+    this.password,
+    this.gender,
+    this.birthday,
+    this.avarta,
+  });
+
+  // Hàm tạo đối tượng User từ JSON
+  User.fromJson(Map<String, dynamic> json) {
+    fullname = json["fullname"];
+    email = json["email"];
     phone = json["phone"];
     password = json["password"];
     gender = json["gender"];
+    // Chuyển đổi birthday từ String thành Date chỉ khi có giá trị
+    birthday = json["birthday"];
+    avarta = json["avarta"];
   }
 
-  Map<String, dynamic> toJson(){
+  // Hàm chuyển đổi User thành JSON
+  Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data["id"] = id;
-    data["name"] = name;
-    data["mail"] = mail;
+    data["fullname"] = fullname;
+    data["email"] = email;
     data["phone"] = phone;
     data["password"] = password;
     data["gender"] = gender;
+    // Không cần phải chuyển đổi DateTime thành String nữa
+    data["birthday"] = birthday;
+    data["avarta"] = avarta;
     return data;
   }
 }
