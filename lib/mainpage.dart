@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sway/page/favorite/favorite.dart';
 import 'package:sway/page/home/home.dart';
+import 'package:sway/page/home/menu.dart';
 import 'package:sway/page/walletscreen/wallet_screen.dart';
 import 'page/defaultwidget.dart';
 
@@ -26,10 +27,10 @@ class _MainpageState extends State<Mainpage> {
     switch (index) {
       case 0:
         nameWidgets = "Trang chủ";
-        return const HomeScreen();
+        return const MainMenu();
       case 1:
         nameWidgets = "Yêu thích";
-        return const FavoriteScreen();
+        return const HomeScreen();
       case 2:
         nameWidgets = "Ví";
         return const WalletScreen();

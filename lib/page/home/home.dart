@@ -17,7 +17,9 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _addressController = TextEditingController();
   LatLng? _selectedLocation;
   List<Map<String, dynamic>> _availableDrivers = [];
+  String selectedButton = "";
 
+////////////////////////////////////FUNCTION///////////////////////////////////////////
   Future<void> _findNearbyDrivers(LatLng userLocation) async {
     final double searchRadius = 5.0; // Bán kính 1km
     final Distance distance = Distance(); // Thư viện tính khoảng cách
@@ -28,10 +30,10 @@ class _HomeScreenState extends State<HomeScreen> {
           .where('status', isEqualTo: 'available') // Chỉ lấy tài xế rảnh
           .get();
 
-        debugPrint("🔥 Lấy danh sách tài xế từ Firestore:");
-    for (var doc in snapshot.docs) {
-      debugPrint("📌 Tài xế ID: ${doc.id} | Dữ liệu: ${doc.data()}");
-    }
+      debugPrint("🔥 Lấy danh sách tài xế từ Firestore:");
+      for (var doc in snapshot.docs) {
+        debugPrint("📌 Tài xế ID: ${doc.id} | Dữ liệu: ${doc.data()}");
+      }
 
       List<Map<String, dynamic>> nearbyDrivers = [];
 
@@ -40,7 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
         double driverLng = doc['longitude'];
 
         LatLng driverLocation = LatLng(driverLat, driverLng);
-        double kmDistance = distance.as(LengthUnit.Kilometer, userLocation, driverLocation);
+        double kmDistance =
+            distance.as(LengthUnit.Kilometer, userLocation, driverLocation);
 
         if (kmDistance <= searchRadius) {
           nearbyDrivers.add({
@@ -62,14 +65,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
   Future<void> _getAddressFromLatLng(LatLng latLng) async {
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(latLng.latitude, latLng.longitude);
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(latLng.latitude, latLng.longitude);
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
-        String address = "${place.street}, ${place.subLocality}, ${place.locality}, ${place.country}";
-        
+        String address =
+            "${place.street}, ${place.subLocality}, ${place.locality}, ${place.country}";
+
         // Loại bỏ dấu ",,," dư thừa
         address = address.replaceAll(RegExp(r',\s*,+'), ',').trim();
         debugPrint(" 🚩 Địa chỉ: $address");
@@ -83,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
       print("Lỗi lấy địa chỉ: $e");
     }
   }
+
   // Lấy vị trí hiện tại và cập nhật địa chỉ
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
@@ -102,8 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Lấy tọa độ vị trí hiện tại
     Position position = await Geolocator.getCurrentPosition();
     LatLng latLng = LatLng(position.latitude, position.longitude);
-  
-  
+
     setState(() {
       _selectedLocation = latLng;
     });
@@ -163,7 +167,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       point: _selectedLocation!,
                       width: 30,
                       height: 30,
-                      child: const Icon(Icons.location_pin, color: Colors.amber, size: 30),
+                      child: const Icon(Icons.location_pin,
+                          color: Colors.amber, size: 30),
                     ),
                   ],
                 ),
@@ -188,7 +193,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     controller: _addressController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.location_on, color: Colors.white),
+                      prefixIcon:
+                          const Icon(Icons.location_on, color: Colors.white),
                       hintText: "Địa chỉ của bạn?",
                       hintStyle: const TextStyle(color: Colors.white70),
                       border: OutlineInputBorder(
@@ -197,7 +203,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       filled: true,
                       fillColor: const Color(0xFF35383F),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 16),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -213,7 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       filled: true,
                       fillColor: const Color(0xFF35383F),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 16),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -221,13 +229,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: _searchLocationByAddress,
+                          onPressed: () {
+                            setState(() {
+                              selectedButton = "move";
+                            });
+                            debugPrint("🚀 Di chuyển");
+                          },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF35383F),
-                            foregroundColor: Colors.white70,
+                            backgroundColor: selectedButton == "move"
+                                ? Colors.amber
+                                : Colors.transparent,
+                            foregroundColor: selectedButton == "move"
+                                ? Colors.white
+                                : Colors.amber,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
-                              side: const BorderSide(color: Colors.amber),
+                              
                             ),
                           ),
                           child: const Text("Di chuyển"),
@@ -236,10 +253,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            setState(() {
+                              selectedButton = "ship";
+                            });
+                            debugPrint("🚀 Xếp hàng");
+                          },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber,
-                            foregroundColor: Colors.white,
+                            backgroundColor: selectedButton == "ship"
+                                ? Colors.amber
+                                : Colors.transparent,
+                            foregroundColor: selectedButton == "ship"
+                                ? Colors.white
+                                : Colors.amber,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),

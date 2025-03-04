@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:sway/mainpage.dart';
 import 'package:sway/page/onboarding/onboarding.dart';
 
 void main() async {
@@ -20,6 +21,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: Colors.black,
         ),
-        home: OnboardingStart());
+        home: Mainpage());
   }
 }
