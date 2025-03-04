@@ -1,78 +1,115 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:encrypt/encrypt.dart' as encrypt; 
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../data/model/user.dart';  
 
-class Usercontroller {
-  ////////////////////////////// BIẾN CỤC BỘ //////////////////////////////////////
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  static const String secretKey = "12345678901234567890123456789012";
-  static const String ivKey = "1234567890123456";
-  
-////////////////////////////// SUB-FUNCTION //////////////////////////////////////
-  String decryptPassword(String encryptedPassword) {
-    final key = encrypt.Key.fromUtf8(secretKey);
-    final iv = encrypt.IV.fromUtf8(ivKey);
-    final encrypter = encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+class UserController {
+  Future<bool> login(String email, String password) async {
+    User user = User(email: email, password: password);  
 
-    try {
-      return encrypter.decrypt64(encryptedPassword, iv: iv); // Trả về mật khẩu gốc
-    } catch (e) {
-      debugPrint("Lỗi giải mã mật khẩu: $e");
-      return ""; // Trả về chuỗi rỗng nếu lỗi
-    }
-  }
+    final response = await apiLogin(user);
 
-////////////////////////////// CONTROLLER FUNCTION ///////////////////////////////
-  //Con_kiểm tra đăng nhập
-  Future<bool> login(String phoneNumber, String password) async {
-    
-    
-    try {
-      // 🔍 Tìm người dùng theo số điện thoại
-      var querySnapshot = await _firestore
-          .collection("USERS")
-          .where("user_phone", isEqualTo: phoneNumber)
-          .limit(1) // Lấy 1 kết quả đầu tiên
-          .get();
-
-      if (querySnapshot.docs.isEmpty) {
-        debugPrint("Không tìm thấy tài khoản với số điện thoại này.");
-        return false; // Không tìm thấy tài khoản
-      }
-
-      var userDoc = querySnapshot.docs.first.data();
-      String encryptedPassword = userDoc["user_password"]; // Lấy mật khẩu đã mã hóa
-
-      // 🔓 Giải mã mật khẩu
-      String decryptedPassword = decryptPassword(encryptedPassword);
-
-      // 🔍 Kiểm tra mật khẩu
-      if (decryptedPassword == password) {
-        debugPrint("Đăng nhập thành công!");
-        return true;
-      } else {
-        debugPrint("Sai mật khẩu!");
-        return false;
-      }
-    } catch (e) {
-      debugPrint("Lỗi khi đăng nhập: $e");
+    if (response.statusCode == 200) {
+      return true;
+    } else {
       return false;
     }
   }
- 
-  //Con_Kiểm tra số điện thoại đã tồn tẠi
-  Future<bool> checkExistPhone(String phoneNumber) async {
-    try {
-      // Truy vấn collection USERS, kiểm tra có document nào có field user_phone = phoneNumber không
-      var querySnapshot = await _firestore
-          .collection("USERS")
-          .where("user_phone", isEqualTo: phoneNumber)
-          .get();
 
-      return querySnapshot.docs.isNotEmpty; // Trả về true nếu có ít nhất 1 kết quả
-    } catch (e) {
-      debugPrint("Lỗi khi kiểm tra số điện thoại: $e");
-      return false; // Trả về false trong trường hợp lỗi
+  Future<bool> checkEmailAndPhone(String email, String phone) async {
+    User user = User(email: email, phone: phone);
+    final response = await apiCheckEmailAndPhone(user);
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
     }
+  }
+
+  Future<bool> signUp(User user) async {
+    final response = await apiSignUp(user);
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> verifyOtp(String email, String otp_code) async {
+    final response = await apiVerifyOtp(email, otp_code);
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+    Future<bool> resendOtp(String email) async {
+    final response = await apiResendOtp(email);
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+
+  Future<http.Response> apiSignUp(User user) async {
+    const String url = "http://10.0.2.2:8080/api/usermanagement/signup"; 
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(user.toJson()),  
+    );
+    return response;
+  }
+
+  Future<http.Response> apiVerifyOtp(String email, String otp_code) async {
+    const String url = "http://10.0.2.2:8080/api/usermanagement/verifyOtp";  
+    Map<String, String> body = {
+      'email': email,
+      'otp_code': otp_code,
+    };
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body), 
+    );
+    return response;
+  }
+
+    Future<http.Response> apiResendOtp(String email) async {
+    const String url = "http://10.0.2.2:8080/api/usermanagement/resendOtp";  
+    Map<String, String> body = {
+      'email': email,
+    };
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body), 
+    );
+    return response;
+  }
+
+  Future<http.Response> apiCheckEmailAndPhone(User user) async {
+    const String url = "http://10.0.2.2:8080/api/usermanagement/checkEmailAndPhoneExistence";  // URL đăng ký
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(user.toJson()),  
+    );
+    return response;
+  }
+
+  Future<http.Response> apiLogin(User user) async {
+    const String url = "http://10.0.2.2:8080/api/usermanagement/login";    
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(user.toJson()),  
+    );
+    return response;
   }
 }

@@ -3,12 +3,13 @@ import 'package:sway/Controller/user_controller.dart';
 import 'package:sway/mainpage.dart';
 import 'package:sway/page/authentication/signup.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
+import 'package:http/http.dart' as http; // Import HTTP for API calls
 
 class LoginScreen extends StatelessWidget {
   ////////////////////////////// BIẾN WIDGETS  ////////////////////////////////////////////////////////
-  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController(); // Changed to emailController
   final TextEditingController passwordController = TextEditingController();
-  final Usercontroller userController = Usercontroller(); // Khởi tạo Usercontroller
+  final UserController userController = UserController(); // Khởi tạo Usercontroller
 
   LoginScreen({super.key});
 
@@ -17,8 +18,9 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(15),
+        child: SingleChildScrollView(
+          reverse: true,
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -26,12 +28,12 @@ class LoginScreen extends StatelessWidget {
               Image.asset('assets/images/logo.png'),
               const SizedBox(height: 20),
 
-              // Field số điện thoại
+              // Field email
               TextField(
-                controller: phoneController,
-                keyboardType: TextInputType.phone,
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress, // Update for email input
                 decoration: const InputDecoration(
-                  labelText: "Số điện thoại",
+                  labelText: "Email", // Changed label to "Email"
                   labelStyle: TextStyle(color: Colors.white),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.white, width: 1),
@@ -193,20 +195,21 @@ class LoginScreen extends StatelessWidget {
   }
 
   ////////////////////////////// FUNCTION  ////////////////////////////////////////////////////////
-  
+
   /// Hàm đăng nhập
   void MakeLogin(BuildContext context) async {
-    String phone = phoneController.text.trim();
+    String email = emailController.text.trim(); // Use email instead of phone
     String password = passwordController.text.trim();
 
-    if (phone.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Vui lòng nhập đầy đủ thông tin")),
       );
       return;
     }
 
-    bool isLoggedIn = await userController.login(phone, password);
+    // Send login request with email and password
+    bool isLoggedIn = await userController.login(email, password); // Pass email here
 
     if (!context.mounted) return;
     if (isLoggedIn) {
@@ -239,7 +242,7 @@ class LoginScreen extends StatelessWidget {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("❌ Số điện thoại hoặc mật khẩu không đúng!")),
+        const SnackBar(content: Text("❌ Email hoặc mật khẩu không đúng!")),
       );
     }
   }
