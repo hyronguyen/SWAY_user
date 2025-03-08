@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sway/config/colors.dart';
+import 'package:sway/page/home/trip_picker.dart';
 
 class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
@@ -13,7 +15,7 @@ class _MainMenuState extends State<MainMenu> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 50, 50, 50),
+      backgroundColor: backgroundblack,
       appBar: AppBar(
         backgroundColor: Colors.transparent, // Set transparent to see the image
         flexibleSpace: Stack(
@@ -28,9 +30,18 @@ class _MainMenuState extends State<MainMenu> {
               ),
             ),
             Container(
-              color: Colors.orange
-                  .withOpacity(0.5), // Dark overlay to make text more readable
-            ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    myorange.withOpacity(0.8),
+                    primary.withOpacity(
+                        0.7) // Nếu `primary` là `const`, cần tạo một bản sao với opacity
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            )
           ],
         ),
         title: Column(
@@ -42,14 +53,14 @@ class _MainMenuState extends State<MainMenu> {
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white),
+                  color: greymenu),
             ),
             Text(
               "Hôm nay bạn muốn đi đâu ?",
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white),
+                  color: backgroundblack),
             ),
             const SizedBox(height: 8),
             Container(
@@ -58,8 +69,33 @@ class _MainMenuState extends State<MainMenu> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TextField(
+                readOnly: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      transitionDuration: const Duration(milliseconds: 600),
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          TripPicker(),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(1.0, 0.0); // Đi từ bên phải vào
+                        const end = Offset.zero;
+                        const curve = Curves.easeInOut;
+
+                        var tween = Tween(begin: begin, end: end)
+                            .chain(CurveTween(curve: curve));
+
+                        return SlideTransition(
+                          position: animation.drive(tween),
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
+                },
                 decoration: InputDecoration(
-                  hintText: "Nhập điểm đến",
+                  hintText: "Nhập điểm đến!",
                   prefixIcon: Icon(Icons.search, color: Colors.black54),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(vertical: 14),
@@ -72,7 +108,6 @@ class _MainMenuState extends State<MainMenu> {
         toolbarHeight: 150,
         elevation: 0,
       ),
-      
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -101,21 +136,26 @@ class _MainMenuState extends State<MainMenu> {
 
             const SizedBox(height: 20),
             // Danh mục tin tức
-            Text("What's New",
+            Text("Sự kiện",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
+
             Container(
-              height: 120,
+              height: 170,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: AssetImage(
+                      "assets/images/banner_evt.png"), // Hình ảnh từ thư mục assets
+                  fit: BoxFit.cover, // Căn chỉnh ảnh phủ toàn bộ Container
+                ),
               ),
               alignment: Alignment.center,
-              child: Text("Danh mục tin tức",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
             ),
             const SizedBox(height: 20),
             // Địa điểm yêu thích
+
             Text("Địa điểm yêu thích",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
@@ -132,7 +172,7 @@ class _MainMenuState extends State<MainMenu> {
               itemBuilder: (context, index) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: Colors.blueAccent,
+                    color: greymenu,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
@@ -157,11 +197,13 @@ class _MainMenuState extends State<MainMenu> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.amber,
+              color: primary,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                    color: backgroundblack,
+                    blurRadius: 4,
+                    offset: Offset(0, 2)),
               ],
             ),
             padding: EdgeInsets.all(15),

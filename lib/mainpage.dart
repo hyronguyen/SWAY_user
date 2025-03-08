@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:sway/config/colors.dart';
+import 'package:sway/page/favorite/favorite.dart';
 // import 'package:sway/page/favorite/favorite.dart';
-import 'package:sway/page/home/home.dart';
+import 'package:sway/page/home/map_picker.dart';
 import 'package:sway/page/home/menu.dart';
 import 'package:sway/page/setting/setting_main.dart';
 import 'package:sway/page/walletscreen/wallet_screen.dart';
@@ -14,6 +16,11 @@ class Mainpage extends StatefulWidget {
 }
 
 class _MainpageState extends State<Mainpage> {
+  final MainMenu mainMenu = MainMenu();
+  final MapPicker mappicker = MapPicker();
+  final WalletScreen walletScreen = WalletScreen();
+  final SettingsScreen settingsScreen = SettingsScreen();
+  final FavoriteScreen favoriteScreen = FavoriteScreen();
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -28,19 +35,19 @@ class _MainpageState extends State<Mainpage> {
     switch (index) {
       case 0:
         nameWidgets = "Trang chủ";
-        return const MainMenu();
+        return mainMenu;
       case 1:
         nameWidgets = "Yêu thích";
-        return const HomeScreen();
+        return favoriteScreen;
       case 2:
         nameWidgets = "Ví";
-        return const WalletScreen();
+        return walletScreen;
       case 3:
         nameWidgets = "Khuyến mãi";
         break;
       case 4:
         nameWidgets = "Hồ sơ";
-        return const SettingsScreen();
+        return settingsScreen;
       default:
         nameWidgets = "None";
         break;
@@ -52,6 +59,7 @@ class _MainpageState extends State<Mainpage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -61,12 +69,12 @@ class _MainpageState extends State<Mainpage> {
             height: 40,
             width: 40,
             decoration: BoxDecoration(
-              color: Colors.amber[600],
+              color: primary,
               borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
               icon: Icon(Icons.menu, size: 24),
-              color: Colors.black,
+              color: backgroundblack,
               onPressed: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -92,12 +100,12 @@ class _MainpageState extends State<Mainpage> {
             height: 40,
             width: 40,
             decoration: BoxDecoration(
-              color: Colors.amber[600],
+              color: primary,
               borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
               icon: Icon(Icons.search, size: 24),
-              color: Colors.black,
+              color: backgroundblack,
               onPressed: () {},
             ),
           ),
@@ -106,12 +114,12 @@ class _MainpageState extends State<Mainpage> {
             height: 40,
             width: 40,
             decoration: BoxDecoration(
-              color: Colors.amber[600],
+              color: primary,
               borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
               icon: Icon(Icons.notifications, size: 24),
-              color: Colors.black,
+              color: backgroundblack,
               onPressed: () {},
             ),
           ),
@@ -119,15 +127,24 @@ class _MainpageState extends State<Mainpage> {
         ],
       ),
       extendBodyBehindAppBar: true,
+
+      // SIDE BAR MENU
       drawer: Drawer(
         child: Container(
-          color: const Color(0xFF1F212A), // Thêm màu nền cho ListView
+          color: backgroundblack, // Thêm màu nền cho ListView
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
               DrawerHeader(
                 decoration: const BoxDecoration(
-                  color: Color(0xFF1F212A), // Màu nền của DrawerHeader,
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color.fromARGB(255, 233, 134, 42),
+                      const Color.fromARGB(255, 243, 192, 24)
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ), // Màu nền của DrawerHeader,
                   border: Border(bottom: BorderSide(width: 0)),
                 ),
                 child: Column(
@@ -135,14 +152,14 @@ class _MainpageState extends State<Mainpage> {
                     CircleAvatar(
                       radius: 40,
                       backgroundImage: NetworkImage(
-                        "https://googleflutter.com/sample_image.jpg",
+                        "https://static.tvtropes.org/pmwiki/pub/images/got_tyrion_lannister.png",
                       ),
                     ),
                     SizedBox(height: 8),
                     Text('Nguyễn Hoàng Nghĩa',
-                        style: TextStyle(color: Colors.white)),
+                        style: TextStyle(color: backgroundblack)),
                     Text("22DH112363@st.huflit.edu.vn",
-                        style: TextStyle(color: Colors.white)),
+                        style: TextStyle(color: greymenu)),
                   ],
                 ),
               ),
@@ -165,11 +182,11 @@ class _MainpageState extends State<Mainpage> {
               const Divider(color: Colors.white),
               ListTile(
                 leading: const Icon(
-                  Icons.location_on,
+                  Icons.favorite,
                   color: Colors.white, // Màu biểu tượng trắng
                 ),
                 title: const Text(
-                  "Địa chỉ",
+                  "Yêu thích",
                   style: TextStyle(color: Colors.white), // Màu chữ trắng
                 ),
                 onTap: () {
