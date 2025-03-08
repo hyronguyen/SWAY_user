@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sway/config/api_token.dart';
 import 'package:sway/config/colors.dart';
 import 'package:http/http.dart' as http;
@@ -12,12 +13,14 @@ class TripConfirmation extends StatefulWidget {
   final String destinationAddress;
   final LatLng pickupLocation;
   final LatLng destinationLocation;
+  final String vehicleType;
 
   TripConfirmation({
     required this.pickupAddress,
     required this.destinationAddress,
     required this.pickupLocation,
     required this.destinationLocation,
+    required this.vehicleType,
   });
 
   @override
@@ -56,6 +59,57 @@ class _TripConfirmationState extends State<TripConfirmation> {
 
   double calculateFare(double km) {
     return km <= 3 ? 16000 : 16000 + (km - 3) * 5000;
+  }
+
+   //Tìm tài xế 
+  Future<void> _choseAvailableDriver(LatLng userLocation) async {
+    final double searchRadius = 2.0; // Bán kính 1km
+    final Distance distance = Distance(); // Thư viện tính khoảng cách
+
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('AVAILABLE_DRIVERS')
+          .where('status', isEqualTo: 'available') // Chỉ lấy tài xế rảnh
+          .get();
+
+      debugPrint("🔥 Lấy danh sách tài xế từ Firestore:");
+      for (var doc in snapshot.docs) {
+        debugPrint("📌 Tài xế ID: ${doc.id} | Dữ liệu: ${doc.data()}");
+      }
+
+      List<Map<String, dynamic>> nearbyDrivers = [];
+
+      for (var doc in snapshot.docs) {
+        double driverLat = doc['latitude'];
+        double driverLng = doc['longitude'];
+
+        LatLng driverLocation = LatLng(driverLat, driverLng);
+        double kmDistance = distance.as(LengthUnit.Kilometer, userLocation, driverLocation);
+
+        if (kmDistance <= searchRadius) {
+          nearbyDrivers.add({
+            'id': doc.id,
+            'latitude': driverLat,
+            'longitude': driverLng,
+            'distance': kmDistance,
+          });
+        }
+      }
+
+      if (nearbyDrivers.isNotEmpty) {
+        // Sắp xếp danh sách theo khoảng cách tăng dần
+        nearbyDrivers.sort((a, b) => a['distance'].compareTo(b['distance']));
+
+        // Chọn tài xế gần nhất
+        Map<String, dynamic> closestDriver = nearbyDrivers.first;
+        debugPrint("🎯 Tài xế gần nhất: ID: ${closestDriver['id']} | Khoảng cách: ${closestDriver['distance']} km");
+      } else {
+        debugPrint("❌ Không tìm thấy tài xế nào trong bán kính $searchRadius km.");
+      }
+
+    } catch (e) {
+      debugPrint("Lỗi tìm tài xế: $e");
+    }
   }
 
   Future<void> getWeatherCondition(LatLng location) async {
@@ -130,8 +184,7 @@ class _TripConfirmationState extends State<TripConfirmation> {
               widthFactor: 1,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  debugPrint(
-                      'Xác nhận: $formattedFare, Thanh toán: $selectedPaymentMethod');
+                  _choseAvailableDriver(widget.pickupLocation);
                 },
                 icon: Icon(Icons.arrow_back),
                 label: Text('Xác nhận chuyến đi'),  
@@ -185,7 +238,7 @@ class _TripConfirmationState extends State<TripConfirmation> {
               children: [
                 Icon(Icons.directions_car, color: Colors.green),
                 SizedBox(width: 8),
-                Text("Khoảng cách",
+                Text("${widget.vehicleType}",
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 Spacer(),
                 Text("$km km",

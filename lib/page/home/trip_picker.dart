@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:sway/config/api_token.dart';
 import 'package:sway/config/colors.dart';
+import 'package:sway/page/home/confirmation.dart';
 import 'package:sway/page/home/map_picker.dart';
 import 'package:sway/page/home/map_picker_des.dart';
 import 'package:sway/page/home/trip_confirmation.dart';
@@ -73,7 +73,8 @@ class _TripPickerState extends State<TripPicker> {
         final data = json.decode(response.body);
 
         setState(() {
-          _suggestions = (data['features'] as List).map<Map<String, dynamic>>((item) {
+          _suggestions =
+              (data['features'] as List).map<Map<String, dynamic>>((item) {
             return {
               'place_name': item['place_name'],
               'latitude': item['geometry']['coordinates'][1],
@@ -89,57 +90,6 @@ class _TripPickerState extends State<TripPicker> {
     }
   }
 
-  //Tìm tài xế 
-  Future<void> _choseAvailableDriver(LatLng userLocation) async {
-    final double searchRadius = 2.0; // Bán kính 1km
-    final Distance distance = Distance(); // Thư viện tính khoảng cách
-
-    try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('AVAILABLE_DRIVERS')
-          .where('status', isEqualTo: 'available') // Chỉ lấy tài xế rảnh
-          .get();
-
-      debugPrint("🔥 Lấy danh sách tài xế từ Firestore:");
-      for (var doc in snapshot.docs) {
-        debugPrint("📌 Tài xế ID: ${doc.id} | Dữ liệu: ${doc.data()}");
-      }
-
-      List<Map<String, dynamic>> nearbyDrivers = [];
-
-      for (var doc in snapshot.docs) {
-        double driverLat = doc['latitude'];
-        double driverLng = doc['longitude'];
-
-        LatLng driverLocation = LatLng(driverLat, driverLng);
-        double kmDistance = distance.as(LengthUnit.Kilometer, userLocation, driverLocation);
-
-        if (kmDistance <= searchRadius) {
-          nearbyDrivers.add({
-            'id': doc.id,
-            'latitude': driverLat,
-            'longitude': driverLng,
-            'distance': kmDistance,
-          });
-        }
-      }
-
-      if (nearbyDrivers.isNotEmpty) {
-        // Sắp xếp danh sách theo khoảng cách tăng dần
-        nearbyDrivers.sort((a, b) => a['distance'].compareTo(b['distance']));
-
-        // Chọn tài xế gần nhất
-        Map<String, dynamic> closestDriver = nearbyDrivers.first;
-        debugPrint("🎯 Tài xế gần nhất: ID: ${closestDriver['id']} | Khoảng cách: ${closestDriver['distance']} km");
-      } else {
-        debugPrint("❌ Không tìm thấy tài xế nào trong bán kính $searchRadius km.");
-      }
-
-    } catch (e) {
-      debugPrint("Lỗi tìm tài xế: $e");
-    }
-  }
-
   //////////////////////////////////////////////LAYOUT///////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
@@ -150,7 +100,10 @@ class _TripPickerState extends State<TripPicker> {
             padding: EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [const Color.fromARGB(255, 233, 134, 42), const Color.fromARGB(255, 243, 192, 24)],
+                colors: [
+                  const Color.fromARGB(255, 233, 134, 42),
+                  const Color.fromARGB(255, 243, 192, 24)
+                ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -163,23 +116,28 @@ class _TripPickerState extends State<TripPicker> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
-                      child: Icon(Icons.close, color: backgroundblack, size: 30),
+                      child:
+                          Icon(Icons.close, color: backgroundblack, size: 30),
                     ),
-                    if (_activeController == _pickupController) // Chỉ hiển thị khi chọn ô nhập điểm đón
+                    if (_activeController ==
+                        _pickupController) // Chỉ hiển thị khi chọn ô nhập điểm đón
                       GestureDetector(
                         onTap: () {
                           debugPrint("Chọn điểm đón trên bản đồ");
                           _openMapPickerPickup();
                         },
-                        child: Icon(Icons.map_rounded, color: Colors.black, size: 30),
+                        child: Icon(Icons.map_rounded,
+                            color: Colors.black, size: 30),
                       ),
-                    if (_activeController == _destinationController) // Chỉ hiển thị khi chọn ô nhập điểm đến
+                    if (_activeController ==
+                        _destinationController) // Chỉ hiển thị khi chọn ô nhập điểm đến
                       GestureDetector(
                         onTap: () {
                           debugPrint("Chọn điểm đến trên bản đồ");
                           _openMapPickerDes();
                         },
-                        child: Icon(Icons.map_rounded, color: Colors.black, size: 30),
+                        child: Icon(Icons.map_rounded,
+                            color: Colors.black, size: 30),
                       ),
                   ],
                 ),
@@ -203,35 +161,28 @@ class _TripPickerState extends State<TripPicker> {
 
           // Nút xác nhận hành trình
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20), // Căn lề trái phải 16px
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             child: FractionallySizedBox(
-              widthFactor: 1, // Đảm bảo nút rộng theo toàn bộ phần còn lại
+              widthFactor: 1,
               child: ElevatedButton(
                 onPressed: () {
-                  if (_pickupController.text.isEmpty || _destinationController.text.isEmpty || pickupLocation == null || destinationLocation == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Please enter your trip details')),
-                  );
+                  if (_pickupController.text.isEmpty ||
+                      _destinationController.text.isEmpty ||
+                      pickupLocation == null ||
+                      destinationLocation == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Please enter your trip details')),
+                    );
                   } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                    builder: (context) => TripConfirmation(
-                      pickupAddress: _pickupController.text,
-                      destinationAddress: _destinationController.text,
-                      pickupLocation: pickupLocation!,
-                      destinationLocation: destinationLocation!,
-                    ),
-                    ),
-                  );
+                    _showVehicleSelection(context); // Hiển thị menu chọn phương tiện
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primary,
+                  backgroundColor: primary, // Thay thế `primary` nếu cần
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 14), // Tạo chiều cao thoải mái cho nút
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: const Text(
                   "Xác nhận hành trình",
@@ -244,12 +195,14 @@ class _TripPickerState extends State<TripPicker> {
               ),
             ),
           ),
+
           SizedBox(height: 20),
         ],
       ),
     );
   }
 
+  // Build Widget ô nhập liệu
   Widget _buildInputField({
     required TextEditingController controller,
     required String hint,
@@ -276,7 +229,7 @@ class _TripPickerState extends State<TripPicker> {
     );
   }
 
-  // Hàm hiện thị danh sách gợi ý
+  // Build Widget danh sách gợi ý
   Widget _buildSuggestionsList() {
     return Container(
       color: backgroundblack,
@@ -287,7 +240,8 @@ class _TripPickerState extends State<TripPicker> {
             leading: Icon(Icons.location_on, color: Colors.white),
             title: Text(
               _suggestions[index]['place_name'],
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
               "Lat: ${_suggestions[index]['latitude']}, Lng: ${_suggestions[index]['longitude']}",
@@ -317,6 +271,64 @@ class _TripPickerState extends State<TripPicker> {
             },
           );
         },
+      ),
+    );
+  }
+
+  void _showVehicleSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          height: 350 ,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Chọn phương tiện di chuyển",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ListTile(
+                leading: Icon(Icons.directions_car, color: primary),
+                title: const Text("Xe máy"),
+                onTap: () => _sendTripConfirmation(context, "xemay"),
+              ),
+              ListTile(
+                leading: Icon(Icons.directions_bike, color: primary),
+                title: const Text("4 chỗ"),
+                onTap: () => _sendTripConfirmation(context, "4cho"),
+              ),
+              ListTile(
+                leading: Icon(Icons.pedal_bike, color: primary),
+                title: const Text("Luxury"),
+                onTap: () => _sendTripConfirmation(context, "luxury"),
+              ),
+              ListTile(
+                leading: Icon(Icons.pedal_bike, color: primary),
+                title: const Text("Tiết kiệm"),
+                onTap: () => _sendTripConfirmation(context, "tietkiem"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _sendTripConfirmation(BuildContext context, String vehicle) {
+    Navigator.pop(context); // Đóng bottom sheet
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Confirmation(
+          pickupAddress: _pickupController.text,
+          destinationAddress: _destinationController.text,
+          pickupLocation: pickupLocation!,
+          destinationLocation: destinationLocation!,
+          vehicleType:vehicle, // Gửi thông tin phương tiện qua màn hình tiếp theo
+        ),
       ),
     );
   }

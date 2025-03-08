@@ -80,8 +80,8 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
     Position position = await Geolocator.getCurrentPosition();
     LatLng latLng = LatLng(position.latitude, position.longitude);
 
+ if (!mounted) return;
     setState(() {
-      if (!mounted) return;
       _selectedLocation = latLng;
     });
 
