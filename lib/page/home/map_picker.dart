@@ -20,6 +20,7 @@ class _MapPickerState extends State<MapPicker> {
   LatLng? _selectedLocation;
   Timer? _debounce;
   bool _isMoving = false;
+  List<Marker> _nearbyDriversMarkers  = [];
 
 
 
@@ -39,21 +40,20 @@ class _MapPickerState extends State<MapPicker> {
 
 // Hàm tìm tài xế gần điểm đón
   Future<void> _findNearbyDrivers(LatLng userLocation) async {
-    final double searchRadius = 5.0; // Bán kính 1km
-    final Distance distance = Distance(); // Thư viện tính khoảng cách
+    setState(() {
+        _nearbyDriversMarkers = [];
+      });
+
+    final double searchRadius = 5.0;
+    final Distance distance = Distance();
 
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('AVAILABLE_DRIVERS')
-          .where('status', isEqualTo: 'available') // Chỉ lấy tài xế rảnh
+          .where('status', isEqualTo: 'available')
           .get();
 
-      debugPrint("🔥 Lấy danh sách tài xế từ Firestore:");
-      for (var doc in snapshot.docs) {
-        debugPrint("📌 Tài xế ID: ${doc.id} | Dữ liệu: ${doc.data()}");
-      }
-
-      List<Map<String, dynamic>> nearbyDrivers = [];
+      List<Marker> markers = [];
 
       for (var doc in snapshot.docs) {
         double driverLat = doc['latitude'];
@@ -64,22 +64,30 @@ class _MapPickerState extends State<MapPicker> {
             distance.as(LengthUnit.Kilometer, userLocation, driverLocation);
 
         if (kmDistance <= searchRadius) {
-          nearbyDrivers.add({
-            'id': doc.id,
-            'latitude': driverLat,
-            'longitude': driverLng,
-            'distance': kmDistance,
-          });
+          markers.add(
+            Marker(
+              point: driverLocation,
+              width: 40,
+              height: 40,
+              child: Icon(
+                Icons.directions_bike,
+                color: myorange,
+                size: 30,
+              ),
+            ),
+          );
         }
       }
 
-      debugPrint(
-          "👱 Tìm thấy ${nearbyDrivers.length} tài xế gần ${_addressController.text}.");
+      setState(() {
+        _nearbyDriversMarkers = markers;
+      });
+
+      debugPrint("👱 Tìm thấy ${markers.length} tài xế gần bạn.");
     } catch (e) {
       debugPrint("Lỗi tìm tài xế: $e");
     }
   }
-
 // Hàm lấy địa chỉ từ tọa độ (lat, lng) 
   Future<void> _getAddressFromLatLng(LatLng latLng) async {
     try {
@@ -129,8 +137,8 @@ class _MapPickerState extends State<MapPicker> {
     Position position = await Geolocator.getCurrentPosition();
     LatLng latLng = LatLng(position.latitude, position.longitude);
 
+  if (!mounted) return;
     setState(() {
-      if (!mounted) return;
       _selectedLocation = latLng;
     });
 
@@ -172,6 +180,7 @@ class _MapPickerState extends State<MapPicker> {
                 urlTemplate:
                     'https://api.mapbox.com/styles/v1/hothanhgiang9/cm6n57t2u007201sg15ac9swb/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiaG90aGFuaGdpYW5nOSIsImEiOiJjbTZuMnhsbWUwMmtkMnFwZDhtNmZkcDJ0In0.0OXsluwAO14jJxPMUowtaA',
               ),
+              MarkerLayer(markers: _nearbyDriversMarkers),
             ],
           ),
 
