@@ -5,6 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:async';
 
+import 'package:sway/config/colors.dart';
+
 class MapPickerDestination extends StatefulWidget {
   const MapPickerDestination({super.key});
 
@@ -13,27 +15,32 @@ class MapPickerDestination extends StatefulWidget {
 }
 
 class _MapPickerDestinationState extends State<MapPickerDestination> {
+  // LOCAL VARIABLES //////////////////////////////////////////////////////////
   final MapController _mapController = MapController();
   final TextEditingController _addressController = TextEditingController();
   LatLng? _selectedLocation;
   Timer? _debounce;
   bool _isMoving = false;
 
+// LIFE CYCLE //////////////////////////////////////////////////////////////
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+
+    Future.delayed(Duration.zero, () {
+      _getCurrentLocation();
+    });
   }
 
   @override
   void dispose() {
-  _debounce?.cancel(); // Hủy bỏ Timer nếu có
-  _mapController.dispose(); // Giải phóng bộ nhớ của MapController
-  _addressController.dispose(); // Giải phóng bộ nhớ của TextEditingController
-  super.dispose();
-}
+    _debounce?.cancel(); // Hủy bỏ Timer nếu có
+    _mapController.dispose(); // Giải phóng bộ nhớ của MapController
+    _addressController.dispose(); // Giải phóng bộ nhớ của TextEditingController
+    super.dispose();
+  }
 
-
+// FUNCTIONS //////////////////////////////////////////////////////////////
   Future<void> _getAddressFromLatLng(LatLng latLng) async {
     try {
       List<Placemark> placemarks =
@@ -52,49 +59,103 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
         String address = addressParts.join(", ");
 
         setState(() {
-           if (!mounted) return;
+          if (!mounted) return;
           _addressController.text = address;
           _selectedLocation = latLng;
         });
-        debugPrint("🚩 Địa chỉ: $address + ${_selectedLocation}");
+        debugPrint("🚩 Địa chỉ điểm đón: $address + ${_selectedLocation}");
       }
     } catch (e) {
       debugPrint("❌ Lỗi lấy địa chỉ: $e");
     }
   }
 
+// Hàm lấy vị trí hiện tại
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
+    _showLoadingDialog(context);
+    try {
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      if (permission == LocationPermission.deniedForever) return;
+
+      Position position = await Geolocator.getCurrentPosition();
+      LatLng latLng = LatLng(position.latitude, position.longitude);
+
+      if (!mounted) return;
+      setState(() {
+        _selectedLocation = latLng;
+      });
+
+      _mapController.move(latLng, 16);
+      _getAddressFromLatLng(latLng);
+    } catch (e) {
+      debugPrint("_getCurrentLocation: $e");
     }
-    if (permission == LocationPermission.deniedForever) return;
-
-    Position position = await Geolocator.getCurrentPosition();
-    LatLng latLng = LatLng(position.latitude, position.longitude);
-
- if (!mounted) return;
-    setState(() {
-      _selectedLocation = latLng;
+    Future.delayed(Duration(milliseconds: 500), () {
+      _hideLoadingDialog(context);
     });
-
-    _mapController.move(latLng, 16);
-    _getAddressFromLatLng(latLng);
   }
 
+// Hàm hiển thị popup loading
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Ngăn người dùng tắt popup khi nhấn ra ngoài
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Chỉ chiếm không gian cần thiết
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Colors.amber), // Màu vàng
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Text(
+                  "Đang lấy vị trí...",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// Hàm hiển thị popup loading
+  void _hideLoadingDialog(BuildContext context) {
+    Navigator.of(context).pop(); // Đóng popup
+  }
+
+//Layout //////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Chọn điểm bạn muốn đến"),
+        title: const Text(
+          "BẠN MUỐN ĐẾN ĐÂU?",
+          style: TextStyle(color: backgroundblack, fontWeight: FontWeight.w500),
+        ),
+        iconTheme: IconThemeData(
+          color: backgroundblack, // Đổi màu icon về đen
+        ),
         automaticallyImplyLeading: true,
+        backgroundColor: primary,
       ),
       body: Stack(
         children: [
@@ -106,10 +167,11 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               ),
               onMapEvent: (event) {
+                // Xử ly sự kiện di chuyển bản đồ
                 setState(() => _isMoving = true);
                 _debounce?.cancel();
                 _debounce = Timer(const Duration(seconds: 1), () {
-                    if (!mounted) return; // Kiểm tra widget đã bị hủy chưa
+                  if (!mounted) return; // Kiểm tra widget đã bị hủy chưa
                   LatLng center = event.camera.center;
                   _getAddressFromLatLng(center);
                   setState(() => _isMoving = false);
@@ -127,7 +189,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
           // PIN CHỌN VỊ TRÍ
           Center(
             child: Icon(
-              Icons.location_pin,
+              Icons.flag,
               color: _isMoving ? Colors.white : Colors.amber,
               size: 40,
             ),
@@ -140,7 +202,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF35383F),
+                color: backgroundblack,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -176,7 +238,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: myorange,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -185,9 +247,9 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
                       child: const Text(
                         "Xác nhận điểm đến",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: backgroundblack,
                         ),
                       ),
                     ),
@@ -196,7 +258,6 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
               ),
             ),
           ),
-          
         ],
       ),
     );

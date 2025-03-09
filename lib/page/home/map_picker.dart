@@ -20,14 +20,15 @@ class _MapPickerState extends State<MapPicker> {
   LatLng? _selectedLocation;
   Timer? _debounce;
   bool _isMoving = false;
-  List<Marker> _nearbyDriversMarkers  = [];
+  List<Marker> _nearbyDriversMarkers = [];
 
-
-
+// INIT & DISPOSE /////////////////////////////////////////////////
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    Future.delayed(Duration.zero, () {
+      _getCurrentLocation();
+    });
   }
 
   @override
@@ -37,12 +38,13 @@ class _MapPickerState extends State<MapPicker> {
     _addressController.dispose(); // Giải phóng bộ nhớ của TextEditingController
     super.dispose();
   }
+  // FUNCTIONS  /////////////////////////////////////////////////
 
 // Hàm tìm tài xế gần điểm đón
   Future<void> _findNearbyDrivers(LatLng userLocation) async {
     setState(() {
-        _nearbyDriversMarkers = [];
-      });
+      _nearbyDriversMarkers = [];
+    });
 
     final double searchRadius = 5.0;
     final Distance distance = Distance();
@@ -70,7 +72,7 @@ class _MapPickerState extends State<MapPicker> {
               width: 40,
               height: 40,
               child: Icon(
-                Icons.directions_bike,
+                Icons.location_history,
                 color: myorange,
                 size: 30,
               ),
@@ -88,7 +90,8 @@ class _MapPickerState extends State<MapPicker> {
       debugPrint("Lỗi tìm tài xế: $e");
     }
   }
-// Hàm lấy địa chỉ từ tọa độ (lat, lng) 
+
+// Hàm lấy địa chỉ từ tọa độ (lat, lng)
   Future<void> _getAddressFromLatLng(LatLng latLng) async {
     try {
       List<Placemark> placemarks =
@@ -124,34 +127,87 @@ class _MapPickerState extends State<MapPicker> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
+    _showLoadingDialog(context);
+    try {
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
+      if (permission == LocationPermission.deniedForever) return;
+
+      Position position = await Geolocator.getCurrentPosition();
+      LatLng latLng = LatLng(position.latitude, position.longitude);
+
+      if (!mounted) return;
+      setState(() {
+        _selectedLocation = latLng;
+      });
+
+      _mapController.move(latLng, 16);
+      _getAddressFromLatLng(latLng);
+    } catch (e) {
+      debugPrint("_getCurrentLocation: $e");
     }
-    if (permission == LocationPermission.deniedForever) return;
-
-    Position position = await Geolocator.getCurrentPosition();
-    LatLng latLng = LatLng(position.latitude, position.longitude);
-
-  if (!mounted) return;
-    setState(() {
-      _selectedLocation = latLng;
+    Future.delayed(Duration(milliseconds: 500), () {
+      _hideLoadingDialog(context);
     });
-
-    _mapController.move(latLng, 16);
-    _getAddressFromLatLng(latLng);
   }
 
+// Hàm hiển thị popup loading
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Ngăn người dùng tắt popup khi nhấn ra ngoài
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Chỉ chiếm không gian cần thiết
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Colors.amber), // Màu vàng
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Text(
+                  "Đang lấy vị trí...",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// Hàm hiển thị popup loading
+  void _hideLoadingDialog(BuildContext context) {
+    Navigator.of(context).pop(); // Đóng popup
+  }
+
+// Layout /////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Chọn điểm đón"),
+        title: const Text(
+          "VỊ TRÍ CỦA BẠN",
+          style: TextStyle(color: backgroundblack, fontWeight: FontWeight.w500),
+        ),
+        iconTheme: IconThemeData(
+          color: backgroundblack, // Đổi màu icon về đen
+        ),
         automaticallyImplyLeading: true,
+        backgroundColor: primary,
       ),
       body: Stack(
         children: [
@@ -193,6 +249,7 @@ class _MapPickerState extends State<MapPicker> {
             ),
           ),
 
+          // Thông tin đia chỉ
           Positioned(
             left: 10,
             right: 20,
@@ -200,7 +257,7 @@ class _MapPickerState extends State<MapPicker> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF35383F),
+                color: backgroundblack,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -210,7 +267,7 @@ class _MapPickerState extends State<MapPicker> {
                     controller: _addressController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.flag, color: redorange),
+                      prefixIcon: const Icon(Icons.location_pin, color: Colors.white),
                       hintText: "Địa chỉ của bạn",
                       hintStyle: const TextStyle(color: Colors.white70),
                       filled: true,
@@ -236,18 +293,18 @@ class _MapPickerState extends State<MapPicker> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
+                        backgroundColor: myorange,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                       child: const Text(
-                        "Xác nhận điểm đón của bạn",
+                        "Xác nhận điểm đón",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: backgroundblack,
                         ),
                       ),
                     ),
@@ -256,6 +313,8 @@ class _MapPickerState extends State<MapPicker> {
               ),
             ),
           ),
+
+          // Nút lấy vị trí hiện tại
           Positioned(
             bottom: 170,
             right: 20,

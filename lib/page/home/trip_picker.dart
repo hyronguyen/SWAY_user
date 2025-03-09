@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sway/config/api_token.dart';
 import 'package:sway/config/colors.dart';
 import 'package:sway/page/home/confirmation.dart';
 import 'package:sway/page/home/map_picker.dart';
 import 'package:sway/page/home/map_picker_des.dart';
-import 'package:sway/page/home/trip_confirmation.dart';
 
 class TripPicker extends StatefulWidget {
   @override
@@ -15,14 +15,110 @@ class TripPicker extends StatefulWidget {
 }
 
 class _TripPickerState extends State<TripPicker> {
+  // LOCAL VARIBLES //////////////////////////////////////////////////////////////////////////////
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
-  final String mapboxAccessToken = map_box_token;
-
+  String? customerid;
+  String mapboxAccessToken = map_box_token;
   LatLng? pickupLocation;
   LatLng? destinationLocation;
-  List<Map<String, dynamic>> _suggestions = []; // Chứa cả tên địa điểm & tọa độ
+  List<Map<String, dynamic>> _suggestions = [];
+  // Chứa cả tên địa điểm & tọa độ
   TextEditingController? _activeController; // Lưu ô nhập liệu đang chọn
+
+// INIT & DISPOSE //////////////////////////////////////////////////////////////////////////
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomerId(); // Lấy CUSTOMER id từ SharePreferences
+  }
+
+  @override
+  void dispose() {
+    _pickupController.dispose();
+    _destinationController.dispose();
+    super.dispose();
+  }
+
+// FUNCTIONS //////////////////////////////////////////////////////////////////////////////
+
+  // Lấy CUSTOMER id từ SharePreferences
+  Future<void> _loadCustomerId() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? storedCustomerId = prefs.getString('customer_id');
+      setState(() {
+        customerid = storedCustomerId ?? "customer_id_test";
+      });
+    } catch (e) {
+      debugPrint("_loadCustomerId: $e");
+    }
+  }
+
+  // Hàm gửi thông tin hành trình
+  void _sendTripConfirmation(BuildContext context, String vehicle) {
+    try {
+      Navigator.pop(context); // Đóng bottom sheet
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Confirmation(
+            pickupAddress: _pickupController.text,
+            destinationAddress: _destinationController.text,
+            pickupLocation: pickupLocation!,
+            destinationLocation: destinationLocation!,
+            vehicleType: vehicle,
+            customer_id: customerid ?? 'null',
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint("_sendTripConfirmation: $e");
+    }
+  }
+
+  // Hàm hiển thị menu chọn phương tiện
+  void _showVehicleSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          height: 350,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Chọn phương tiện di chuyển",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ListTile(
+                leading: Icon(Icons.directions_car, color: primary),
+                title: const Text("Xe máy"),
+                onTap: () => _sendTripConfirmation(context, "xemay"),
+              ),
+              ListTile(
+                leading: Icon(Icons.directions_bike, color: primary),
+                title: const Text("4 chỗ"),
+                onTap: () => _sendTripConfirmation(context, "4cho"),
+              ),
+              ListTile(
+                leading: Icon(Icons.pedal_bike, color: primary),
+                title: const Text("Luxury"),
+                onTap: () => _sendTripConfirmation(context, "luxury"),
+              ),
+              ListTile(
+                leading: Icon(Icons.pedal_bike, color: primary),
+                title: const Text("Tiết kiệm"),
+                onTap: () => _sendTripConfirmation(context, "tietkiem"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   //Hàm mở map picker
   Future<void> _openMapPickerPickup() async {
@@ -42,6 +138,7 @@ class _TripPickerState extends State<TripPicker> {
     }
   }
 
+  //Hàm mở map picker_ điểm đến
   Future<void> _openMapPickerDes() async {
     final result = await Navigator.push(
       context,
@@ -90,7 +187,7 @@ class _TripPickerState extends State<TripPicker> {
     }
   }
 
-  //////////////////////////////////////////////LAYOUT///////////////////////////////////////////////
+  //LAUOUT /////////////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,8 +253,33 @@ class _TripPickerState extends State<TripPicker> {
               ],
             ),
           ),
-          // Danh sách gợi ý trải dài đến cuối màn hình
-          Expanded(child: _buildSuggestionsList()),
+
+          SizedBox(height: 10),
+          // Các nút chức năng
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildActionButton(Icons.home, "Nhà"),
+              _buildActionButton(Icons.business, "Văn phòng"),
+              _buildActionButton(Icons.favorite, "Yêu thích"),
+              _buildActionButton(Icons.flight, "Sân bay"),
+            ],
+          ),
+
+          Divider(
+            color: greymenu, // Màu của đường kẻ
+            thickness: 1, // Độ dày của đường kẻ
+            height: 20, // Khoảng cách giữa các thành phần trên và dưới Divider
+          ),
+          
+
+          // Danh sách gợi ý hoặc Danh sách lịch sử
+          Expanded(
+            child: _activeController == _pickupController ||
+                    _activeController == _destinationController
+                ? _buildSuggestionsList()
+                : _buildHistoryList(),
+          ),
 
           // Nút xác nhận hành trình
           Padding(
@@ -174,7 +296,8 @@ class _TripPickerState extends State<TripPicker> {
                       SnackBar(content: Text('Please enter your trip details')),
                     );
                   } else {
-                    _showVehicleSelection(context); // Hiển thị menu chọn phương tiện
+                    _showVehicleSelection(
+                        context); // Hiển thị menu chọn phương tiện
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -202,6 +325,7 @@ class _TripPickerState extends State<TripPicker> {
     );
   }
 
+// WIDGETS //////////////////////////////////////////////////////////////////////////////
   // Build Widget ô nhập liệu
   Widget _buildInputField({
     required TextEditingController controller,
@@ -233,102 +357,152 @@ class _TripPickerState extends State<TripPicker> {
   Widget _buildSuggestionsList() {
     return Container(
       color: backgroundblack,
-      child: ListView.builder(
-        itemCount: _suggestions.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: Icon(Icons.location_on, color: Colors.white),
-            title: Text(
-              _suggestions[index]['place_name'],
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Danh sách gợi ý",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            subtitle: Text(
-              "Lat: ${_suggestions[index]['latitude']}, Lng: ${_suggestions[index]['longitude']}",
-              style: TextStyle(color: Colors.grey),
+          ),
+          Flexible(
+            child: ListView.builder(
+              padding: EdgeInsets.zero, // Loại bỏ padding mặc định
+              itemCount: _suggestions.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: Icon(Icons.location_on, color: Colors.white),
+                  title: Text(
+                    _suggestions[index]['place_name'],
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    "Lat: ${_suggestions[index]['latitude']}, Lng: ${_suggestions[index]['longitude']}",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  onTap: () {
+                    if (_activeController != null) {
+                      _activeController!.text =
+                          _suggestions[index]['place_name'];
+
+                      if (_activeController == _pickupController) {
+                        pickupLocation = LatLng(
+                          _suggestions[index]['latitude'],
+                          _suggestions[index]['longitude'],
+                        );
+                      }
+
+                      if (_activeController == _destinationController) {
+                        destinationLocation = LatLng(
+                          _suggestions[index]['latitude'],
+                          _suggestions[index]['longitude'],
+                        );
+                      }
+                    }
+                    setState(() => _suggestions = []);
+                  },
+                );
+              },
             ),
-            onTap: () {
-              if (_activeController != null) {
-                _activeController!.text = _suggestions[index]['place_name'];
-
-                // Nếu là ô nhập điểm đón thì gán pickupLocation
-                if (_activeController == _pickupController) {
-                  pickupLocation = LatLng(
-                    _suggestions[index]['latitude'],
-                    _suggestions[index]['longitude'],
-                  );
-                }
-
-                // Nếu là ô nhập điểm đến thì gán destinationLocation
-                if (_activeController == _destinationController) {
-                  destinationLocation = LatLng(
-                    _suggestions[index]['latitude'],
-                    _suggestions[index]['longitude'],
-                  );
-                }
-              }
-              setState(() => _suggestions = []);
-            },
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 
-  void _showVehicleSelection(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          height: 350 ,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Chọn phương tiện di chuyển",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              ListTile(
-                leading: Icon(Icons.directions_car, color: primary),
-                title: const Text("Xe máy"),
-                onTap: () => _sendTripConfirmation(context, "xemay"),
-              ),
-              ListTile(
-                leading: Icon(Icons.directions_bike, color: primary),
-                title: const Text("4 chỗ"),
-                onTap: () => _sendTripConfirmation(context, "4cho"),
-              ),
-              ListTile(
-                leading: Icon(Icons.pedal_bike, color: primary),
-                title: const Text("Luxury"),
-                onTap: () => _sendTripConfirmation(context, "luxury"),
-              ),
-              ListTile(
-                leading: Icon(Icons.pedal_bike, color: primary),
-                title: const Text("Tiết kiệm"),
-                onTap: () => _sendTripConfirmation(context, "tietkiem"),
-              ),
-            ],
+// Build Widget danh sách gợi ý
+  Widget _buildActionButton(IconData icon, String label) {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: greymenu,
+            shape: BoxShape.circle,
           ),
-        );
-      },
+          child: Icon(icon, color: Colors.white, size: 24),
+        ),
+        SizedBox(height: 4),
+        Text(label, style: TextStyle(color: Colors.white, fontSize: 12)),
+      ],
     );
   }
 
-  void _sendTripConfirmation(BuildContext context, String vehicle) {
-    Navigator.pop(context); // Đóng bottom sheet
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Confirmation(
-          pickupAddress: _pickupController.text,
-          destinationAddress: _destinationController.text,
-          pickupLocation: pickupLocation!,
-          destinationLocation: destinationLocation!,
-          vehicleType:vehicle, // Gửi thông tin phương tiện qua màn hình tiếp theo
-        ),
+  // Build Widget danh sách lịch sử tìm kiếm
+  Widget _buildHistoryList() {
+    // Danh sách dữ liệu demo
+    List<Map<String, dynamic>> demoHistory = [
+      {
+        "place_name": "Hồ Gươm, Hà Nội",
+        "latitude": 21.0285,
+        "longitude": 105.8520
+      },
+      {
+        "place_name": "Chợ Bến Thành, TP HCM",
+        "latitude": 10.7722,
+        "longitude": 106.6983
+      },
+      {
+        "place_name": "Cầu Rồng, Đà Nẵng",
+        "latitude": 16.0605,
+        "longitude": 108.2270
+      },
+      {
+        "place_name": "Nhà thờ Đức Bà, TP HCM",
+        "latitude": 10.7794,
+        "longitude": 106.6992
+      },
+    ];
+
+    return Container(
+      color: backgroundblack,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Đã tìm kiếm gần đây",
+              style: TextStyle(
+                color: primary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Flexible(
+            child: ListView.builder(
+              padding: EdgeInsets.zero, // Loại bỏ padding mặc định
+              itemCount: demoHistory.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: Icon(Icons.history, color: Colors.white),
+                  title: Text(
+                    demoHistory[index]['place_name'],
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    "Lat: ${demoHistory[index]['latitude']}, Lng: ${demoHistory[index]['longitude']}",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  trailing: Icon(Icons.chevron_right, color: Colors.grey),
+                  onTap: () {
+                    debugPrint(
+                        "Chọn địa điểm: ${demoHistory[index]['place_name']}");
+                  },
+                );
+              },
+            ),
+          )
+        ],
       ),
     );
   }

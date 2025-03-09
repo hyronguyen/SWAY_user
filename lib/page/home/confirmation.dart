@@ -8,19 +8,23 @@ import 'package:sway/config/api_token.dart';
 import 'package:sway/config/colors.dart';
 import 'package:http/http.dart' as http;
 
+///////////////////////////////// ATTRIBUTE ////////////////////////////////////////
 class Confirmation extends StatefulWidget {
   final String pickupAddress;
   final String destinationAddress;
   final LatLng pickupLocation;
   final LatLng destinationLocation;
   final String vehicleType;
+  final String customer_id;
 
+///////////////////////////////// CONTRUCTOR ////////////////////////////////////////
   Confirmation({
     required this.pickupAddress,
     required this.destinationAddress,
     required this.pickupLocation,
     required this.destinationLocation,
     required this.vehicleType,
+    required this.customer_id,
   });
 
   @override
@@ -28,19 +32,20 @@ class Confirmation extends StatefulWidget {
 }
 
 class _ConfirmationState extends State<Confirmation> {
-///////////////////////////////// Biến cục bộ ////////////////////////////////////////
-  final MapController _mapController = MapController();
-  String _selectedPaymentMethod = 'Tiền mặt'; // Mặc định là Tiền mặt
-  String weatherCondition = "Đang tải...";
-  double weatherFee = 0;
-  double fare = 0;
-  
+///////////////////////////////// BIẾN CỤC BỘ ////////////////////////////////////////
 
-///////////////////////////////// FUNCTION ////////////////////////////////////////
+  final MapController _mapController = MapController(); // Điều khiển bản đồ
+  String _selectedPaymentMethod = 'Tiền mặt'; // Phương thức thanh toán
+  String weatherCondition = "Đang tải..."; // Thông tin thời tiết
+  double weatherFee = 0; // Phí thời tiết
+  double fare = 0; // Tiền cước
+
+///////////////////////////////// INIT & DiSPOSE ////////////////////////////////////////
 
   @override
   void initState() {
     super.initState();
+
     getWeatherCondition(widget.pickupLocation);
     getRoute();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -48,6 +53,7 @@ class _ConfirmationState extends State<Confirmation> {
     });
   }
 
+///////////////////////////////// FUNCTION ////////////////////////////////////////
   // Hiển thị menu chọn phương thức thanh toán
   void _showPaymentMenu() {
     showModalBottomSheet(
@@ -91,12 +97,12 @@ class _ConfirmationState extends State<Confirmation> {
     );
   }
 
-  //tính khoản các giữa 2 điểm
+  // Tính khoản các giữa 2 điểm
   double _calculateDistance(LatLng start, LatLng end) {
     return Distance().as(LengthUnit.Kilometer, start, end);
   }
 
-  //tính tiền cước
+  // Tính tiền cước
   double _calculateFare(double km, String vehicleType) {
     if (vehicleType == 'xemay') {
       return km <= 3 ? 10000 : 10000 + (km - 3) * 3000;
@@ -111,7 +117,7 @@ class _ConfirmationState extends State<Confirmation> {
     }
   }
 
-  //lấy thôn tin thời tiết
+  // Lấy thôn tin thời tiết
   Future<void> getWeatherCondition(LatLng location) async {
     final String url =
         "http://api.weatherapi.com/v1/current.json?key=$weather_api_token&q=${location.latitude},${location.longitude}";
@@ -147,19 +153,22 @@ class _ConfirmationState extends State<Confirmation> {
     }
   }
 
-// Hàm format tiền
+  // Hàm format tiền
   String formatCurrency(double amount) {
     final formatter = NumberFormat('#,###', 'vi_VN');
     return '${formatter.format(amount)} đ';
   }
 
+  // Di chuyển bản đồ đến vị trí của 2 điểm
   void _fitMapToBounds() {
     final bounds =
         LatLngBounds(widget.pickupLocation, widget.destinationLocation);
-    final center = LatLng(widget.pickupLocation.latitude,widget.pickupLocation.longitude);
+    final center =
+        LatLng(widget.pickupLocation.latitude, widget.pickupLocation.longitude);
     _mapController.move(center, _calculateZoomLevel(bounds));
   }
 
+  // Lấy tuyến đường từ điểm A đến điểm B
   Future<List<LatLng>> getRoute() async {
     List<LatLng> routePoints = [];
     final String url =
@@ -171,12 +180,10 @@ class _ConfirmationState extends State<Confirmation> {
         final data = jsonDecode(response.body);
         final List coordinates = data['routes'][0]['geometry']['coordinates'];
 
-        
-          routePoints =
-              coordinates.map((coord) => LatLng(coord[1], coord[0])).toList();
-        
+        routePoints =
+            coordinates.map((coord) => LatLng(coord[1], coord[0])).toList();
 
-        debugPrint("Tuyến đường: $routePoints");
+        debugPrint("Lấy tuyến đường thành công");
         return routePoints;
       } else {
         debugPrint("Lỗi khi lấy tuyến đường: ${response.statusCode}");
@@ -187,6 +194,7 @@ class _ConfirmationState extends State<Confirmation> {
     return routePoints;
   }
 
+  // Tính mức zoom cho bản đồ
   double _calculateZoomLevel(LatLngBounds bounds) {
     double distance =
         Distance().as(LengthUnit.Kilometer, bounds.northEast, bounds.southWest);
@@ -219,6 +227,7 @@ class _ConfirmationState extends State<Confirmation> {
       ),
       body: Column(
         children: [
+          // PHẦN HIỆM THỊ BẢN ĐỒ
           Expanded(
             flex: 3,
             child: FlutterMap(
@@ -228,11 +237,13 @@ class _ConfirmationState extends State<Confirmation> {
                 initialZoom: 13.0,
               ),
               children: [
+                // BẢN ĐỒ
                 TileLayer(
                   urlTemplate:
                       'https://api.mapbox.com/styles/v1/hothanhgiang9/cm6n57t2u007201sg15ac9swb/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiaG90aGFuaGdpYW5nOSIsImEiOiJjbTZuMnhsbWUwMmtkMnFwZDhtNmZkcDJ0In0.0OXsluwAO14jJxPMUowtaA',
                 ),
                 MarkerLayer(
+                  // MARKET ĐIỂM ĐÓ Đón
                   markers: [
                     Marker(
                       width: 80.0,
@@ -244,6 +255,7 @@ class _ConfirmationState extends State<Confirmation> {
                         size: 40,
                       ),
                     ),
+                    // MARKET ĐIỂM ĐÓ Đến
                     Marker(
                       width: 80.0,
                       height: 80.0,
@@ -256,6 +268,7 @@ class _ConfirmationState extends State<Confirmation> {
                     ),
                   ],
                 ),
+                // Vẽ tuyến đường
                 FutureBuilder<List<LatLng>>(
                   future: getRoute(),
                   builder: (context, snapshot) {
@@ -264,7 +277,8 @@ class _ConfirmationState extends State<Confirmation> {
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Lỗi khi tải tuyến đường'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('Không có dữ liệu tuyến đường'));
+                      return Center(
+                          child: Text('Không có dữ liệu tuyến đường'));
                     }
 
                     return PolylineLayer(
@@ -281,6 +295,8 @@ class _ConfirmationState extends State<Confirmation> {
               ],
             ),
           ),
+
+          // PHẦN HIỆM THỊ THÔNG TIN
           Expanded(
             flex: 2,
             child: Container(
@@ -303,9 +319,20 @@ class _ConfirmationState extends State<Confirmation> {
                     // Đường kẻ ngăn cách
                     GestureDetector(
                       onTap: () {
-                        debugPrint('Xem thêm thông tin chuyến xe');
+                        double distance = _calculateDistance( widget.pickupLocation, widget.destinationLocation);
+
+                        debugPrint('Điếm đón: ${widget.pickupAddress}');
+                        debugPrint('Điểm đến: ${widget.destinationAddress} - cách $distance km');
+                        debugPrint('Phương tiện: ${widget.vehicleType}');
+                        debugPrint('Phí cước: ${formatCurrency(fare)} + phí thời tiết: ${formatCurrency(weatherFee)}');
+                        debugPrint('Phương thức thanh toán: $_selectedPaymentMethod');
+                        debugPrint('Thời tiết: $weatherCondition');
+                        debugPrint('ID khách hàng: ${widget.customer_id}');
+          
+                         
                       },
-                      child: Text(
+                      child: 
+                      Text(
                         'Xem thêm',
                         style: TextStyle(color: greymenu, fontSize: 16),
                       ),
@@ -376,7 +403,7 @@ class _ConfirmationState extends State<Confirmation> {
                             ),
                           ),
                           onPressed: () {
-                            debugPrint('Trip confirmed');
+                            debugPrint('Tìm Tài Xế');
                           },
                           child: Text('Tìm tài xế',
                               style: TextStyle(

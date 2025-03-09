@@ -194,6 +194,7 @@ class TransactionItem extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.24),
             blurRadius: 1,
           ),
