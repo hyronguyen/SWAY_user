@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:sway/config/api_token.dart';
 import 'package:sway/config/colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:sway/page/Tracking/trip_tracking.dart';
 
 ///////////////////////////////// ATTRIBUTE ////////////////////////////////////////
 class Confirmation extends StatefulWidget {
@@ -39,6 +41,7 @@ class _ConfirmationState extends State<Confirmation> {
   String weatherCondition = "Đang tải..."; // Thông tin thời tiết
   double weatherFee = 0; // Phí thời tiết
   double fare = 0; // Tiền cước
+  bool findingDriver = true;
 
 ///////////////////////////////// INIT & DiSPOSE ////////////////////////////////////////
 
@@ -218,6 +221,157 @@ class _ConfirmationState extends State<Confirmation> {
     return zoom;
   }
 
+  // Gửi yêu cầu
+  Future<void> _sendRequesttoFirebase(String driverId) async {
+    try {
+      CollectionReference rideRequests =
+          FirebaseFirestore.instance.collection('RIDE_REQUESTS');
+
+      await rideRequests.add({
+        'pickup_address': widget.pickupAddress,
+        'destination_address': widget.destinationAddress,
+        'pickup_location': {
+          'latitude': widget.pickupLocation.latitude,
+          'longitude': widget.pickupLocation.longitude,
+        },
+        'destination_location': {
+          'latitude': widget.destinationLocation.latitude,
+          'longitude': widget.destinationLocation.longitude,
+        },
+        'vehicle_type': widget.vehicleType,
+        'fare': fare,
+        'weather_fee': weatherFee,
+        'payment_method': _selectedPaymentMethod,
+        'weather_condition': weatherCondition,
+        'customer_id': widget.customer_id,
+        'driver_id': driverId,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      debugPrint( '🚖 Yêu cầu đặt xe đã được gửi thành công với tài xế ID: $driverId');
+
+    // Đóng Dialog nếu nó đang mở
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+
+    // Đợi đóng dialog xong rồi mới chuyển hướng
+    Future.delayed(Duration(milliseconds: 300), () {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TripTracking(),
+          ),
+        );
+      }
+    });
+
+      
+    } catch (e) {
+      debugPrint('⚠️ Lỗi khi gửi yêu cầu đặt xe: $e');
+    }
+  }
+
+ void _showFindingDriverDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Không cho phép đóng bằng cách bấm ra ngoài
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: backgroundblack,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20), // Bo tròn góc
+        ),
+        title: Row(
+          children: 
+          [
+            Icon(Icons.directions_car, color: primary, size: 28),
+            SizedBox(width: 10),
+            Text(
+              "Đang tìm tài xế...",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 10),
+            CircularProgressIndicator(color: primary), // Tăng tính đồng bộ màu sắc
+            SizedBox(height: 20),
+           
+          ],
+        ),
+        actions: [
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                findingDriver = false; // Dừng vòng lặp tìm tài xế
+                Navigator.pop(context); // Đóng dialog
+              },
+              icon: Icon(Icons.close, color: Colors.white),
+              label: Text("Hủy tìm",style: TextStyle(color: Colors.white),),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: greymenu,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+  Future<void> _choseDriver(LatLng userLocation, String vehicleType) async {
+    findingDriver = true;
+    _showFindingDriverDialog(context); // Hiển thị loading dialog
+
+    while (findingDriver) {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('AVAILABLE_DRIVERS')
+          .where('status', isEqualTo: 'available')
+          .where('vehicle', isEqualTo: vehicleType)
+          .get();
+
+      List<Map<String, dynamic>> nearbyDrivers = [];
+
+      for (var doc in snapshot.docs) {
+        double driverLat = doc['latitude'];
+        double driverLng = doc['longitude'];
+        double kmDistance = Distance().as(
+            LengthUnit.Kilometer, userLocation, LatLng(driverLat, driverLng));
+
+        if (kmDistance <= 5.0) {
+          nearbyDrivers.add({
+            'id': doc.id,
+            'distance_km': kmDistance,
+          });
+        }
+      }
+
+      if (nearbyDrivers.isNotEmpty) {
+        nearbyDrivers
+            .sort((a, b) => a['distance_km'].compareTo(b['distance_km']));
+        String driverId = nearbyDrivers.first['id'];
+
+        debugPrint("✅ Đã chọn tài xế ID: $driverId");
+
+        await _sendRequesttoFirebase(driverId);
+        findingDriver = false;
+        Navigator.pop(context); // Đóng dialog
+      } else {
+        debugPrint("⚠️ Không tìm thấy tài xế, thử lại sau 5 giây...");
+        await Future.delayed(Duration(seconds: 5));
+      }
+    }
+  }
+
 ////////////////////////////////// LAYOUT /////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
@@ -319,20 +473,24 @@ class _ConfirmationState extends State<Confirmation> {
                     // Đường kẻ ngăn cách
                     GestureDetector(
                       onTap: () {
-                        double distance = _calculateDistance( widget.pickupLocation, widget.destinationLocation);
+                        
+                        double distance = _calculateDistance(
+                            widget.pickupLocation, widget.destinationLocation);
 
                         debugPrint('Điếm đón: ${widget.pickupAddress}');
-                        debugPrint('Điểm đến: ${widget.destinationAddress} - cách $distance km');
+                        debugPrint(
+                            'Điểm đến: ${widget.destinationAddress} - cách $distance km');
                         debugPrint('Phương tiện: ${widget.vehicleType}');
-                        debugPrint('Phí cước: ${formatCurrency(fare)} + phí thời tiết: ${formatCurrency(weatherFee)}');
-                        debugPrint('Phương thức thanh toán: $_selectedPaymentMethod');
+                        debugPrint(
+                            'Phí cước: ${formatCurrency(fare)} + phí thời tiết: ${formatCurrency(weatherFee)}');
+                        debugPrint(
+                            'Phương thức thanh toán: $_selectedPaymentMethod');
                         debugPrint('Thời tiết: $weatherCondition');
                         debugPrint('ID khách hàng: ${widget.customer_id}');
-          
-                         
+
+                       
                       },
-                      child: 
-                      Text(
+                      child: Text(
                         'Xem thêm',
                         style: TextStyle(color: greymenu, fontSize: 16),
                       ),
@@ -403,7 +561,9 @@ class _ConfirmationState extends State<Confirmation> {
                             ),
                           ),
                           onPressed: () {
-                            debugPrint('Tìm Tài Xế');
+                            LatLng pickup = LatLng(widget.pickupLocation.latitude,
+                            widget.pickupLocation.longitude);
+                             _choseDriver(pickup, widget.vehicleType);
                           },
                           child: Text('Tìm tài xế',
                               style: TextStyle(
