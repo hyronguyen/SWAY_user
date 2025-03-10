@@ -94,22 +94,22 @@ class _TripPickerState extends State<TripPicker> {
               ),
               const SizedBox(height: 10),
               ListTile(
-                leading: Icon(Icons.directions_car, color: primary),
+                leading: Icon(Icons.motorcycle_rounded, color: primary),
                 title: const Text("Xe máy"),
                 onTap: () => _sendTripConfirmation(context, "xemay"),
               ),
               ListTile(
-                leading: Icon(Icons.directions_bike, color: primary),
+                leading: Icon(Icons.directions_car, color: primary),
                 title: const Text("4 chỗ"),
                 onTap: () => _sendTripConfirmation(context, "4cho"),
               ),
               ListTile(
-                leading: Icon(Icons.pedal_bike, color: primary),
+                leading: Icon(Icons.electric_car_outlined, color: primary),
                 title: const Text("Luxury"),
                 onTap: () => _sendTripConfirmation(context, "luxury"),
               ),
               ListTile(
-                leading: Icon(Icons.pedal_bike, color: primary),
+                leading: Icon(Icons.bike_scooter, color: primary),
                 title: const Text("Tiết kiệm"),
                 onTap: () => _sendTripConfirmation(context, "tietkiem"),
               ),
