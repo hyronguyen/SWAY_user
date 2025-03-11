@@ -337,7 +337,7 @@ class _ConfirmationState extends State<Confirmation> {
         .listen((DocumentSnapshot snapshot) {
       if (snapshot.exists) {
         String requestStatus = snapshot.get('request_status');
-        String driverid= snapshot.get('driver_id');
+        String driverid = snapshot.get('driver_id');
 
         if (requestStatus == 'accepted') {
           debugPrint("🟢 Tài xế đã chấp nhận chuyến xe!");
@@ -353,10 +353,10 @@ class _ConfirmationState extends State<Confirmation> {
             context,
             MaterialPageRoute(
               builder: (context) => TripTracking(
-                rideId: rideId, 
-                destinationLocation: widget.destinationLocation, 
-                pickupLocation: widget.pickupLocation,
-                driversId: driverid),
+                  rideId: rideId,
+                  destinationLocation: widget.destinationLocation,
+                  pickupLocation: widget.pickupLocation,
+                  driversId: driverid),
             ),
           );
         } else if (requestStatus == 'denied') {
@@ -420,9 +420,21 @@ class _ConfirmationState extends State<Confirmation> {
           actions: [
             Center(
               child: ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   findingDriver = false;
                   _isFindingDialogShowing = false; // Cập nhật trạng thái dialog
+
+                  // Xóa tất cả các yêu cầu trong RIDE_REQUESTS có customer_id = widget.customer_id
+                  await FirebaseFirestore.instance
+                      .collection('RIDE_REQUESTS')
+                      .where('customer_id', isEqualTo: widget.customer_id)
+                      .get()
+                      .then((querySnapshot) {
+                    for (var doc in querySnapshot.docs) {
+                      doc.reference.delete();
+                    }
+                  });
+
                   Navigator.pop(context); // Đóng dialog
                 },
                 icon: Icon(Icons.close, color: Colors.white),
