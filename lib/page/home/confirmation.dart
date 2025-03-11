@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -47,7 +46,6 @@ class _ConfirmationState extends State<Confirmation> {
   StreamSubscription<DocumentSnapshot>? _rideSubscription;
   Set<String> _blockedDrivers = {}; // Danh sách tài xế bị chặn cục bộ
   bool _isFindingDialogShowing = false;
-
 
 ///////////////////////////////// INIT & DiSPOSE ////////////////////////////////////////
 
@@ -267,7 +265,7 @@ class _ConfirmationState extends State<Confirmation> {
           '🚖 Yêu cầu đặt xe đã được gửi thành công với tài xế ID: $driverId');
 
       // 📌 Bắt đầu theo dõi trạng thái cuốc xe
-      _trackRideStatus(rideDocRef.id, driverId);
+      _trackRequestStatus(rideDocRef.id, driverId);
     } catch (e) {
       debugPrint('⚠️ Lỗi khi gửi yêu cầu đặt xe: $e');
     }
@@ -275,170 +273,179 @@ class _ConfirmationState extends State<Confirmation> {
 
   // Hàm chọn tài xế
   Future<void> _choseDriver(LatLng userLocation, String vehicleType) async {
-  findingDriver = true;
-  _showFindingDriverDialog(context); // Chỉ hiển thị nếu chưa có dialog
+    findingDriver = true;
+    _showFindingDriverDialog(context); // Chỉ hiển thị nếu chưa có dialog
 
-  while (findingDriver) {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('AVAILABLE_DRIVERS')
-        .where('status', isEqualTo: 'available')
-        .where('vehicle', isEqualTo: vehicleType)
-        .get();
+    while (findingDriver) {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('AVAILABLE_DRIVERS')
+          .where('status', isEqualTo: 'available')
+          .where('vehicle', isEqualTo: vehicleType)
+          .get();
 
-    List<Map<String, dynamic>> nearbyDrivers = [];
+      List<Map<String, dynamic>> nearbyDrivers = [];
 
-    for (var doc in snapshot.docs) {
-      String driverId = doc.id;
+      for (var doc in snapshot.docs) {
+        String driverId = doc.id;
 
-      if (_blockedDrivers.contains(driverId)) continue;
+        if (_blockedDrivers.contains(driverId)) continue;
 
-      double driverLat = doc['latitude'];
-      double driverLng = doc['longitude'];
-      double kmDistance = Distance().as(
-          LengthUnit.Kilometer, userLocation, LatLng(driverLat, driverLng));
+        double driverLat = doc['latitude'];
+        double driverLng = doc['longitude'];
+        double kmDistance = Distance().as(
+            LengthUnit.Kilometer, userLocation, LatLng(driverLat, driverLng));
 
-      if (kmDistance <= 5.0) {
-        nearbyDrivers.add({
-          'id': driverId,
-          'distance_km': kmDistance,
-        });
+        if (kmDistance <= 5.0) {
+          nearbyDrivers.add({
+            'id': driverId,
+            'distance_km': kmDistance,
+          });
+        }
       }
-    }
 
-    if (nearbyDrivers.isNotEmpty) {
-      nearbyDrivers.sort((a, b) => a['distance_km'].compareTo(b['distance_km']));
-      String driverId = nearbyDrivers.first['id'];
+      if (nearbyDrivers.isNotEmpty) {
+        nearbyDrivers
+            .sort((a, b) => a['distance_km'].compareTo(b['distance_km']));
+        String driverId = nearbyDrivers.first['id'];
 
-      debugPrint("✅ Đã chọn tài xế ID: $driverId");
+        debugPrint("✅ Đã chọn tài xế ID: $driverId");
 
-      await _sendRequesttoFirebase(driverId); // Gửi yêu cầu
-
-      findingDriver = false;
-      return;
-    } else {
-      debugPrint("⚠️ Không tìm thấy tài xế, thử lại sau 5 giây...");
-      await Future.delayed(Duration(seconds: 5));
-    }
-  }
-
-  debugPrint("❌ Đã hủy tìm tài xế.");
-  if (Navigator.canPop(context)) {
-    _isFindingDialogShowing = false; // Cập nhật trạng thái dialog
-    Navigator.pop(context);
-  }
-}
-
-
-  // Kiểm tra trạng thái yêu cầu
-  void _trackRideStatus(String rideId, String driverId) {
-  _rideSubscription?.cancel();
-  _rideSubscription = FirebaseFirestore.instance
-      .collection('RIDE_REQUESTS')
-      .doc(rideId)
-      .snapshots()
-      .listen((DocumentSnapshot snapshot) {
-    if (snapshot.exists) {
-      String requestStatus = snapshot.get('request_status');
-
-      if (requestStatus == 'accepted') {
-        debugPrint("🟢 Tài xế đã chấp nhận chuyến xe!");
+        await _sendRequesttoFirebase(driverId); // Gửi yêu cầu
 
         findingDriver = false;
-        _isFindingDialogShowing = false; // Cập nhật trạng thái dialog
-
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
-
-      } else if (requestStatus == 'denied') {
-        debugPrint("⛔ Tài xế từ chối chuyến xe! Đưa vào danh sách chặn.");
-        _blockedDrivers.add(driverId);
-
-        FirebaseFirestore.instance
-            .collection('RIDE_REQUESTS')
-            .doc(rideId)
-            .delete()
-            .then((_) {
-          debugPrint("🗑️ Đã xóa RIDE_REQUESTS của tài xế $driverId.");
-
-          // Đợi 2 giây rồi tìm tài xế mới mà không đóng dialog
-          Future.delayed(Duration(seconds: 2), () {
-            _choseDriver(widget.pickupLocation, widget.vehicleType);
-          });
-        }).catchError((error) {
-          debugPrint("⚠️ Lỗi khi xóa RIDE_REQUESTS: $error");
-        });
+        return;
+      } else {
+        debugPrint("⚠️ Không tìm thấy tài xế, thử lại sau 5 giây...");
+        await Future.delayed(Duration(seconds: 5));
       }
     }
-  }, onError: (error) {
-    debugPrint("⚠️ Lỗi khi theo dõi trạng thái chuyến xe: $error");
-  });
-}
 
+    debugPrint("❌ Đã hủy tìm tài xế.");
+    if (Navigator.canPop(context)) {
+      _isFindingDialogShowing = false; // Cập nhật trạng thái dialog
+      Navigator.pop(context);
+    }
+  }
+
+  // Kiểm tra trạng thái yêu cầu
+  void _trackRequestStatus(String rideId, String driverId) {
+    _rideSubscription?.cancel();
+    _rideSubscription = FirebaseFirestore.instance
+        .collection('RIDE_REQUESTS')
+        .doc(rideId)
+        .snapshots()
+        .listen((DocumentSnapshot snapshot) {
+      if (snapshot.exists) {
+        String requestStatus = snapshot.get('request_status');
+        String driverid= snapshot.get('driver_id');
+
+        if (requestStatus == 'accepted') {
+          debugPrint("🟢 Tài xế đã chấp nhận chuyến xe!");
+
+          findingDriver = false;
+          _isFindingDialogShowing = false; // Cập nhật trạng  thái dialog
+
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TripTracking(
+                rideId: rideId, 
+                destinationLocation: widget.destinationLocation, 
+                pickupLocation: widget.pickupLocation,
+                driversId: driverid),
+            ),
+          );
+        } else if (requestStatus == 'denied') {
+          debugPrint("⛔ Tài xế từ chối chuyến xe! Đưa vào danh sách chặn.");
+          _blockedDrivers.add(driverId);
+
+          FirebaseFirestore.instance
+              .collection('RIDE_REQUESTS')
+              .doc(rideId)
+              .delete()
+              .then((_) {
+            debugPrint("🗑️ Đã xóa RIDE_REQUESTS của tài xế $driverId.");
+
+            // Đợi 2 giây rồi tìm tài xế mới mà không đóng dialog
+            Future.delayed(Duration(seconds: 2), () {
+              _choseDriver(widget.pickupLocation, widget.vehicleType);
+            });
+          }).catchError((error) {
+            debugPrint("⚠️ Lỗi khi xóa RIDE_REQUESTS: $error");
+          });
+        }
+      }
+    }, onError: (error) {
+      debugPrint("⚠️ Lỗi khi theo dõi trạng thái chuyến xe: $error");
+    });
+  }
 
   // Hiện popup chờ
   void _showFindingDriverDialog(BuildContext context) {
-  if (_isFindingDialogShowing) return; // Nếu đã hiển thị, không gọi lại
+    if (_isFindingDialogShowing) return; // Nếu đã hiển thị, không gọi lại
 
-  _isFindingDialogShowing = true; // Đánh dấu dialog đang hiển thị
+    _isFindingDialogShowing = true; // Đánh dấu dialog đang hiển thị
 
-  showDialog(
-    context: context,
-    barrierDismissible: false, // Không cho phép bấm ra ngoài để đóng
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: backgroundblack,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Row(
-          children: [
-            Icon(Icons.directions_car, color: primary, size: 28),
-            SizedBox(width: 10),
-            Text(
-              "Đang tìm tài xế...",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 10),
-            CircularProgressIndicator(color: primary),
-            SizedBox(height: 20),
-          ],
-        ),
-        actions: [
-          Center(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                findingDriver = false;
-                _isFindingDialogShowing = false; // Cập nhật trạng thái dialog
-                Navigator.pop(context); // Đóng dialog
-              },
-              icon: Icon(Icons.close, color: Colors.white),
-              label: Text(
-                "Hủy tìm",
-                style: TextStyle(color: Colors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: greymenu,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-              ),
-            ),
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Không cho phép bấm ra ngoài để đóng
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: backgroundblack,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-        ],
-      );
-    },
-  ).then((_) {
-    _isFindingDialogShowing = false; // Khi dialog đóng, cập nhật lại biến cờ
-  });
-}
-
+          title: Row(
+            children: [
+              Icon(Icons.directions_car, color: primary, size: 28),
+              SizedBox(width: 10),
+              Text(
+                "Đang tìm tài xế...",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 10),
+              CircularProgressIndicator(color: primary),
+              SizedBox(height: 20),
+            ],
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  findingDriver = false;
+                  _isFindingDialogShowing = false; // Cập nhật trạng thái dialog
+                  Navigator.pop(context); // Đóng dialog
+                },
+                icon: Icon(Icons.close, color: Colors.white),
+                label: Text(
+                  "Hủy tìm",
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: greymenu,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      _isFindingDialogShowing = false; // Khi dialog đóng, cập nhật lại biến cờ
+    });
+  }
 
 ////////////////////////////////// LAYOUT /////////////////////////////////////////////
   @override

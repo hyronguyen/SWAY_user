@@ -7,16 +7,16 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sway/config/colors.dart';
 import 'package:http/http.dart' as http;
-import 'package:sway/page/Tracking/trip_tracking_todes.dart';
+import 'package:sway/page/defaultwidget.dart';
 
-class TripTracking extends StatefulWidget {
+class TripTrackingToDes extends StatefulWidget {
   final String rideId;
   final LatLng destinationLocation;
   final LatLng pickupLocation;
   final String driversId;
   
 
-  const TripTracking(
+  const TripTrackingToDes(
       {Key? key,
       required this.rideId,
       required this.destinationLocation,
@@ -25,10 +25,10 @@ class TripTracking extends StatefulWidget {
       : super(key: key);
 
   @override
-  _TripTrackingState createState() => _TripTrackingState();
+  _TripTrackingToDesState createState() => _TripTrackingToDesState();
 }
 
-class _TripTrackingState extends State<TripTracking> {
+class _TripTrackingToDesState extends State<TripTrackingToDes> {
   // LOCAL VARIBLE ////////////////////////////////////////////////////////////////////////
   late final MapController _mapController = MapController();
   LatLng _currentPosition = LatLng(10.7769, 106.7009);
@@ -64,16 +64,12 @@ class _TripTrackingState extends State<TripTracking> {
         .listen((snapshot) {
       if (snapshot.exists) {
         var data = snapshot.data();
-        if (data != null && data['tracking_status'] == 'goingtodes') {
+        if (data != null && data['tracking_status'] == 'done') {
           // Chuyển sang màn hình TripTrackingTodes nếu trạng thái thay đổi
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => TripTrackingToDes(
-                rideId: widget.rideId,
-                destinationLocation: widget.destinationLocation,
-                pickupLocation: widget.pickupLocation,
-                driversId: widget.driversId,
+              builder: (context) => DefaultWidget(title: "Cảm ơn quý khách"
               ),
             ),
           );
@@ -82,6 +78,7 @@ class _TripTrackingState extends State<TripTracking> {
     });
   }
 
+  // Theo dõi vị trí khách hàng
   void _startTracking() {
     debugPrint("BẮT ĐẦU THEO DÕI KHÁCH HÀNG");
   
@@ -135,7 +132,7 @@ class _TripTrackingState extends State<TripTracking> {
   Future<List<LatLng>> getRoute() async {
     List<LatLng> routePoints = [];
     final String url =
-        'https://api.mapbox.com/directions/v5/mapbox/driving/${_driverPosition.longitude},${_driverPosition.latitude};${_currentPosition.longitude},${_currentPosition.latitude}?geometries=geojson&access_token=pk.eyJ1IjoiaG90aGFuaGdpYW5nOSIsImEiOiJjbTZuMnhsbWUwMmtkMnFwZDhtNmZkcDJ0In0.0OXsluwAO14jJxPMUowtaA';
+        'https://api.mapbox.com/directions/v5/mapbox/driving/${_driverPosition.longitude},${_driverPosition.latitude};${widget.destinationLocation.longitude},${widget.destinationLocation.latitude}?geometries=geojson&access_token=pk.eyJ1IjoiaG90aGFuaGdpYW5nOSIsImEiOiJjbTZuMnhsbWUwMmtkMnFwZDhtNmZkcDJ0In0.0OXsluwAO14jJxPMUowtaA';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -162,7 +159,7 @@ class _TripTrackingState extends State<TripTracking> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('TÀI XẾ ĐANG TRÊN'),
+        appBar: AppBar(title: const Text('ĐI ĐẾN ĐÍCH'),
         automaticallyImplyLeading: false,),
         body: Column(
           children: [
@@ -193,7 +190,7 @@ class _TripTrackingState extends State<TripTracking> {
                         polylines: [
                           Polyline(
                             points: routePoints,
-                            color: Colors.blue,
+                            color: Colors.pink,
                             strokeWidth: 4.0,
                           ),
                         ],
@@ -204,10 +201,10 @@ class _TripTrackingState extends State<TripTracking> {
                         Marker(
                           width: 80.0,
                           height: 80.0,
-                          point: _currentPosition,
+                          point: widget.destinationLocation,
                           child: const Icon(
-                            Icons.emoji_people_outlined,
-                            color: primary,
+                            Icons.flag,
+                            color: Colors.green,
                             size: 40,
                           ),
                         ),
