@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:async';
 import 'package:sway/config/colors.dart';
+import 'package:sway/config/icon.dart';
 
 class MapPicker extends StatefulWidget {
   const MapPicker({super.key});
@@ -71,11 +72,7 @@ class _MapPickerState extends State<MapPicker> {
               point: driverLocation,
               width: 40,
               height: 40,
-              child: Icon(
-                Icons.location_history,
-                color: myorange,
-                size: 30,
-              ),
+              child: driver_icon
             ),
           );
         }
@@ -240,14 +237,10 @@ class _MapPickerState extends State<MapPicker> {
             ],
           ),
 
-          // PIN CHỌN VỊ TRÍ
+          // Pin
           Center(
-            child: Icon(
-              Icons.location_pin,
-              color: _isMoving ? Colors.white : primary,
-              size: 40,
-            ),
-          ),
+  child: _isMoving ? pinoff_icon : pin_icon,
+) ,
 
           // Thông tin đia chỉ
           Positioned(
