@@ -72,7 +72,7 @@ class _MapPickerState extends State<MapPicker> {
               point: driverLocation,
               width: 40,
               height: 40,
-              child: driver_icon
+              child: xemay_icon
             ),
           );
         }
@@ -246,7 +246,7 @@ class _MapPickerState extends State<MapPicker> {
           Positioned(
             left: 10,
             right: 20,
-            bottom: 10,
+            bottom: 30,
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -255,16 +255,18 @@ class _MapPickerState extends State<MapPicker> {
               ),
               child: Column(
                 children: [
+
+                  // Ô THÔNG TIN ĐỊNH VỊ 
                   TextField(
                     readOnly: true,
                     controller: _addressController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.location_pin, color: Colors.white),
+                      prefixIcon: const Icon(Icons.location_pin, color: primary),
                       hintText: "Địa chỉ của bạn",
                       hintStyle: const TextStyle(color: Colors.white70),
                       filled: true,
-                      fillColor: const Color(0xFF35383F),
+                      fillColor: greymenu,
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 14, horizontal: 16),
                       border: InputBorder.none,
@@ -286,7 +288,7 @@ class _MapPickerState extends State<MapPicker> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: myorange,
+                        backgroundColor: primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

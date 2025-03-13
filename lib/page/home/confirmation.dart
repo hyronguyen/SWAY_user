@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:sway/config/api_token.dart';
 import 'package:sway/config/colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:sway/config/icon.dart';
 import 'package:sway/config/price_chart.dart';
 import 'package:sway/page/Tracking/trip_tracking.dart';
 
@@ -483,32 +484,7 @@ class _ConfirmationState extends State<Confirmation> {
                   urlTemplate:
                       'https://api.mapbox.com/styles/v1/hothanhgiang9/cm6n57t2u007201sg15ac9swb/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiaG90aGFuaGdpYW5nOSIsImEiOiJjbTZuMnhsbWUwMmtkMnFwZDhtNmZkcDJ0In0.0OXsluwAO14jJxPMUowtaA',
                 ),
-                MarkerLayer(
-                  // MARKET ĐIỂM ĐÓ Đón
-                  markers: [
-                    Marker(
-                      width: 80.0,
-                      height: 80.0,
-                      point: widget.pickupLocation,
-                      child: Icon(
-                        Icons.location_pin,
-                        color: Colors.red,
-                        size: 40,
-                      ),
-                    ),
-                    // MARKET ĐIỂM ĐÓ Đến
-                    Marker(
-                      width: 80.0,
-                      height: 80.0,
-                      point: widget.destinationLocation,
-                      child: Icon(
-                        Icons.flag,
-                        color: Colors.green,
-                        size: 40,
-                      ),
-                    ),
-                  ],
-                ),
+                
                 // Vẽ tuyến đường
                 FutureBuilder<List<LatLng>>(
                   future: getRoute(),
@@ -527,11 +503,30 @@ class _ConfirmationState extends State<Confirmation> {
                         Polyline(
                           points: snapshot.data!,
                           strokeWidth: 3.0,
-                          color: primary, // Màu đường đi
+                          color: path, // Màu đường đi
                         ),
                       ],
                     );
                   },
+                ),
+
+                MarkerLayer(
+                  // MARKET ĐIỂM ĐÓ Đón
+                  markers: [
+                    Marker(
+                      width: 80.0,
+                      height: 80.0,
+                      point: widget.pickupLocation,
+                      child: point_icon
+                    ),
+                    // MARKET ĐIỂM ĐÓ Đến
+                    Marker(
+                      width: 80.0,
+                      height: 80.0,
+                      point: widget.destinationLocation,
+                      child: des_icon
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -187,7 +187,7 @@ class _TripPickerState extends State<TripPicker> {
     }
   }
 
-  //LAUOUT /////////////////////////////////////////////////////////////////////////////
+  //LAUOUT --------------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -325,7 +325,7 @@ class _TripPickerState extends State<TripPicker> {
     );
   }
 
-// WIDGETS //////////////////////////////////////////////////////////////////////////////
+// WIDGETS --------------------------------------------------------------------------------
   // Build Widget ô nhập liệu
   Widget _buildInputField({
     required TextEditingController controller,

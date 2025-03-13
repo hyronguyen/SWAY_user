@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'dart:async';
-
+import 'package:sway/config/icon.dart';
 import 'package:sway/config/colors.dart';
 
 class MapPickerDestination extends StatefulWidget {
@@ -15,14 +15,14 @@ class MapPickerDestination extends StatefulWidget {
 }
 
 class _MapPickerDestinationState extends State<MapPickerDestination> {
-  // LOCAL VARIABLES //////////////////////////////////////////////////////////
+  // LOCAL VARIABLES -----------------------------------------------------------------------------------------------------------------
   final MapController _mapController = MapController();
   final TextEditingController _addressController = TextEditingController();
   LatLng? _selectedLocation;
   Timer? _debounce;
   bool _isMoving = false;
 
-// LIFE CYCLE //////////////////////////////////////////////////////////////
+// LIFE CYCLE -----------------------------------------------------------------------------------------------------------------
   @override
   void initState() {
     super.initState();
@@ -40,7 +40,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
     super.dispose();
   }
 
-// FUNCTIONS //////////////////////////////////////////////////////////////
+// FUNCTIONS -----------------------------------------------------------------------------------------------------------------
   Future<void> _getAddressFromLatLng(LatLng latLng) async {
     try {
       List<Placemark> placemarks =
@@ -142,7 +142,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
     Navigator.of(context).pop(); // Đóng popup
   }
 
-//Layout //////////////////////////////////////////////////////////////////
+//Layout -----------------------------------------------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,8 +157,10 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
         automaticallyImplyLeading: true,
         backgroundColor: primary,
       ),
+
       body: Stack(
         children: [
+
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
@@ -167,6 +169,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               ),
               onMapEvent: (event) {
+
                 // Xử ly sự kiện di chuyển bản đồ
                 setState(() => _isMoving = true);
                 _debounce?.cancel();
@@ -188,17 +191,14 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
 
           // PIN CHỌN VỊ TRÍ
           Center(
-            child: Icon(
-              Icons.flag,
-              color: _isMoving ? Colors.white : Colors.amber,
-              size: 40,
-            ),
+            child: _isMoving ? pinoff_icon : pin_icon
           ),
 
+          // Ô THÔNG TIN ĐỊNH VỊ VÀ NÚT XÁC NHẬN
           Positioned(
             left: 10,
             right: 20,
-            bottom: 10,
+            bottom: 30,
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -207,6 +207,8 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
               ),
               child: Column(
                 children: [
+
+                  // Ô THÔNG TIN ĐỊNH VỊ 
                   TextField(
                     readOnly: true,
                     controller: _addressController,
@@ -216,7 +218,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
                       hintText: "Địa chỉ của bạn",
                       hintStyle: const TextStyle(color: Colors.white70),
                       filled: true,
-                      fillColor: const Color(0xFF35383F),
+                      fillColor: greymenu,
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 14, horizontal: 16),
                       border: InputBorder.none,
@@ -224,7 +226,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
                   ),
                   SizedBox(height: 10),
 
-                  // Xác nhận địa chỉ
+                  //NÚT XÁC NHẬN VỊ TRÍ
                   FractionallySizedBox(
                     widthFactor: 1,
                     child: ElevatedButton(
@@ -238,7 +240,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: myorange,
+                        backgroundColor: primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
