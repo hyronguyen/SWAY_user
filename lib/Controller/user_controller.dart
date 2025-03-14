@@ -9,11 +9,10 @@ class UserController {
     final response = await apiLogin(user);
 
     if (response.statusCode == 200) {
-      // Parse the response body to extract the token and customer_id
       var responseData = json.decode(response.body);
-      return responseData['data'];  // Return the data containing both the token and customer_id
+      return responseData['data'];  
     } else {
-      return null;  // Return null if login fails
+      return null;  
     }
   }
 
@@ -22,7 +21,7 @@ class UserController {
 
     if (response.statusCode == 200) {
       var responseData = json.decode(response.body);
-      return responseData;  // Trả về dữ liệu khách hàng
+      return responseData;  
     } else {
       print('Lỗi khi gọi API: ${response.statusCode}');
       return null;
@@ -69,21 +68,19 @@ class UserController {
     }
   }
 
-Future<http.Response> apiGetInformationCustomer(int customerId, String token) async {
-  const String url = "http://10.0.2.2:8080/api/usermanagement/get-information-customer"; 
-  
-  final response = await http.get(
-    Uri.parse('$url?customer_id=$customerId'), 
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': token, 
-    },
-  );
-  
-  return response;
-}
-
-
+  Future<http.Response> apiGetInformationCustomer(int customerId, String token) async {
+    const String url = "http://10.0.2.2:8080/api/usermanagement/get-information-customer"; 
+    
+    final response = await http.get(
+      Uri.parse('$url?customer_id=$customerId'), 
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token, 
+      },
+    );
+    
+    return response;
+  }
 
   Future<http.Response> apiSignUp(User user) async {
     const String url = "http://10.0.2.2:8080/api/usermanagement/signup"; 
