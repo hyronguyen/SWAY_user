@@ -2,8 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:sway/config/colors.dart';
 import 'package:sway/mainpage.dart';
-
-
+import 'package:sway/page/authentication/login.dart';
+import 'package:sway/page/onboarding/onboarding.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -22,6 +22,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: backgroundblack,
         ),
-        home: Mainpage());
+        home: LoginScreen());
   }
 }

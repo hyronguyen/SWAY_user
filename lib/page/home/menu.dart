@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sway/Controller/user_controller.dart';
 import 'package:sway/config/colors.dart';
 import 'package:sway/page/home/trip_picker.dart';
+import 'dart:convert';
 
 class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
@@ -10,21 +13,86 @@ class MainMenu extends StatefulWidget {
 }
 
 class _MainMenuState extends State<MainMenu> {
-  String customer = "Nguyễn Văn A";
+  String fullname = ''; 
+  final UserController userController = UserController(); 
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCustomer();  
+  }
+
+  Future<void> _checkCustomer() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");  
+    String? customerIdStr = prefs.getString("customer_id");  
+
+    if (token != null && customerIdStr != null) {
+      int storedCustomerId = int.parse(customerIdStr);
+
+      Map<String, dynamic> decodedToken = _decodeJwt(token);
+      
+      if (decodedToken.containsKey('data') && decodedToken['data'].containsKey('CUSTOMER_ID')) {
+        int tokenCustomerId = decodedToken['data']['CUSTOMER_ID'];
+
+        if (storedCustomerId == tokenCustomerId) {
+          Map<String, dynamic>? customerData = await userController.getCustomer(storedCustomerId, token);
+
+          if (customerData != null) {
+            String customerJson = json.encode(customerData);
+
+            await prefs.setString('customer_data', customerJson);
+            if (customerJson != null) {
+              Map<String, dynamic> customerData = json.decode(customerJson);
+
+              setState(() {
+                fullname = customerData['FULLNAME'];
+              });
+
+            } else {
+              print("Không tìm thấy thông tin khách hàng trong SharedPreferences.");
+            }
+            print("Thông tin khách hàng đã được lưu vào SharedPreferences dưới dạng JSON.");
+          } else {
+            print("Lỗi khi lấy thông tin khách hàng.");
+          }
+        } else {
+          print("customer_id không khớp giữa SharedPreferences và token.");
+        }
+      } else {
+        print("Token không chứa CUSTOMER_ID.");
+      }
+    } else {
+      print("Không tìm thấy token hoặc customer_id trong SharedPreferences.");
+    }
+  }
+
+  Map<String, dynamic> _decodeJwt(String token) {
+    List<String> parts = token.split('.');
+    if (parts.length == 3) {
+      String payload = parts[1];
+      // Thêm padding nếu thiếu để giải mã Base64
+      payload = payload.padRight(payload.length + (4 - payload.length % 4) % 4, '=');
+      String decoded = utf8.decode(base64Url.decode(payload));
+      return json.decode(decoded);
+    }
+    return {};
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundblack,
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // Set transparent to see the image
+        backgroundColor: Colors.transparent, 
+        automaticallyImplyLeading: false,
         flexibleSpace: Stack(
           children: [
             Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage(
-                      "assets/images/appbar_menu.png"), // Replace with your image path
+                      "assets/images/appbar_menu.png"),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -35,7 +103,7 @@ class _MainMenuState extends State<MainMenu> {
                   colors: [
                     myorange.withOpacity(0.8),
                     primary.withOpacity(
-                        0.7) // Nếu `primary` là `const`, cần tạo một bản sao với opacity
+                        0.7) 
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -49,7 +117,7 @@ class _MainMenuState extends State<MainMenu> {
           children: [
             const SizedBox(height: 8),
             Text(
-              "Xin chào, $customer",
+              "Xin chào, $fullname",
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
@@ -124,11 +192,11 @@ class _MainMenuState extends State<MainMenu> {
                   children: [
                     _buildServiceOption("Xe máy", Icons.motorcycle),
                     SizedBox(width: 16), // Space between items
-                    _buildServiceOption("Xe 4 chỗ", Icons.directions_car),
+                    _buildServiceOption("Xe ô tô", Icons.directions_car),
                     SizedBox(width: 16),
-                    _buildServiceOption("Xe Vip", Icons.local_taxi),
+                    _buildServiceOption("Đồ ăn", Icons.fastfood),
                     SizedBox(width: 16),
-                    _buildServiceOption("Tiết Kiệm", Icons.electric_car),
+                    _buildServiceOption("Giao hàng", Icons.delivery_dining_sharp),
                   ],
                 ),
               ),
@@ -156,7 +224,7 @@ class _MainMenuState extends State<MainMenu> {
             const SizedBox(height: 20),
             // Địa điểm yêu thích
 
-            Text("Địa điểm yêu thích",
+            Text("Có thể bạn sẽ thích",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             GridView.builder(

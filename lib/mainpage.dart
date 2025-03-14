@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sway/Controller/user_controller.dart';
 import 'package:sway/config/colors.dart';
 import 'package:sway/page/favorite/favorite.dart';
-// import 'package:sway/page/favorite/favorite.dart';
 import 'package:sway/page/home/map_picker.dart';
 import 'package:sway/page/home/menu.dart';
 import 'package:sway/page/setting/setting_main.dart';
 import 'package:sway/page/walletscreen/wallet_screen.dart';
 import 'page/defaultwidget.dart';
+import 'dart:convert';
+
 
 class Mainpage extends StatefulWidget {
   const Mainpage({super.key});
@@ -16,17 +19,44 @@ class Mainpage extends StatefulWidget {
 }
 
 class _MainpageState extends State<Mainpage> {
+  String fullname = ''; 
+  String email = ''; 
   final MainMenu mainMenu = MainMenu();
   final MapPicker mappicker = MapPicker();
   final WalletScreen walletScreen = WalletScreen();
   final SettingsScreen settingsScreen = SettingsScreen();
   final FavoriteScreen favoriteScreen = FavoriteScreen();
+
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+   @override
+  void initState() {
+    super.initState();
+    _loadCustomerData();
+  }
+
+    Future<void> _loadCustomerData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? customerJson = prefs.getString('customer_data');
+
+    if (customerJson != null) {
+      Map<String, dynamic> customerData = json.decode(customerJson);
+
+      setState(() {
+        fullname = customerData['FULLNAME'];
+        email = customerData['EMAIL'];
+
+      });
+
+    } else {
+      print("Không tìm thấy thông tin khách hàng trong SharedPreferences.");
+    }
   }
 
   // Hàm này trả về tên cho AppBar title và widget tương ứng
@@ -104,20 +134,6 @@ class _MainpageState extends State<Mainpage> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
-              icon: Icon(Icons.search, size: 24),
-              color: backgroundblack,
-              onPressed: () {},
-            ),
-          ),
-          SizedBox(width: 16),
-          Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              color: primary,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: IconButton(
               icon: Icon(Icons.notifications, size: 24),
               color: backgroundblack,
               onPressed: () {},
@@ -148,7 +164,7 @@ class _MainpageState extends State<Mainpage> {
                   border: Border(bottom: BorderSide(width: 0)),
                 ),
                 child: Column(
-                  children: const [
+                  children: [
                     CircleAvatar(
                       radius: 40,
                       backgroundImage: NetworkImage(
@@ -156,9 +172,9 @@ class _MainpageState extends State<Mainpage> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    Text('Nguyễn Hoàng Nghĩa',
+                    Text(fullname,
                         style: TextStyle(color: backgroundblack)),
-                    Text("22DH112363@st.huflit.edu.vn",
+                    Text(email,
                         style: TextStyle(color: greymenu)),
                   ],
                 ),
@@ -279,6 +295,29 @@ class _MainpageState extends State<Mainpage> {
           ),
         ),
       ),
+      floatingActionButton: SizedBox(
+        width: 75,
+        height: 85,
+        child: ClipPath(
+          clipper: HexagonClipper(),
+          child: Material(
+            color: Colors.amber,
+            elevation: 4,
+            shadowColor: Colors.black.withOpacity(0.3),
+            child: IconButton(
+              icon: const Icon(
+                Icons.account_balance_wallet_outlined,
+                color: Colors.black,
+                size: 32,
+              ),
+              onPressed: () {
+                _onItemTapped(2);
+              },
+            ),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: Theme(
         data: ThemeData(
           canvasColor: Colors.black,
@@ -296,12 +335,12 @@ class _MainpageState extends State<Mainpage> {
               label: "Yêu thích",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.wallet),
-              label: "Ví",
+              icon: SizedBox.shrink(), // Ẩn biểu tượng ở vị trí giữa
+              label: "",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.percent),
-              label: "Khuyến mãi",
+              icon: Icon(Icons.chat_bubble),
+              label: "Tin nhắn",
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
@@ -313,7 +352,6 @@ class _MainpageState extends State<Mainpage> {
           unselectedItemColor: Colors.grey,
           onTap: _onItemTapped,
           showUnselectedLabels: true,
-          backgroundColor: Colors.black,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
         ),
@@ -321,4 +359,26 @@ class _MainpageState extends State<Mainpage> {
       body: _loadWidget(_selectedIndex),
     );
   }
+}
+
+class HexagonClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    double w = size.width;
+    double h = size.height;
+    Path path = Path();
+
+    path.moveTo(w * 0.5, 0);
+    path.lineTo(w, h * 0.25);
+    path.lineTo(w, h * 0.75); 
+    path.lineTo(w * 0.5, h); 
+    path.lineTo(0, h * 0.75); 
+    path.lineTo(0, h * 0.25); 
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

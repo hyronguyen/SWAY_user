@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sway/Controller/user_controller.dart';
+import 'package:sway/config/colors.dart';
 import 'package:sway/data/model/user.dart';
 import 'package:sway/page/authentication/login.dart';
 import 'package:sway/page/authentication/signup_email_verify.dart';
@@ -47,7 +48,7 @@ class _SignupScreenState extends State<SignupScreen> {
       appBar: AppBar(
         title: Text("Đăng ký"),
         centerTitle: true,
-        backgroundColor: Colors.black,
+        backgroundColor: backgroundblack,
       ),
       body: SingleChildScrollView(
         child: Padding(

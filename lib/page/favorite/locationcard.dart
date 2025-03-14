@@ -13,13 +13,13 @@ class LocationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(13),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFF35383F),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: const Color(0xFFFFF1B1),
-          width: 0.5,
+          color: Colors.white,
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
