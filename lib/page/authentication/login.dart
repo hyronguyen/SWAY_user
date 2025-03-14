@@ -194,11 +194,9 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  ////////////////////////////// FUNCTION  ////////////////////////////////////////////////////////
-
-  /// Hàm đăng nhập
-  void MakeLogin(BuildContext context) async {
-    String email = emailController.text.trim(); // Use email instead of phone
+    ////////////////////////////// FUNCTION  ////////////////////////////////////////////////////////
+    void MakeLogin(BuildContext context) async {
+    String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
@@ -208,19 +206,29 @@ class LoginScreen extends StatelessWidget {
       return;
     }
 
-    // Send login request with email and password
-    bool isLoggedIn = await userController.login(email, password); // Pass email here
+    // Gửi yêu cầu đăng nhập với email và mật khẩu
+    Map<String, dynamic>? responseData = await userController.login(email, password); // Lấy dữ liệu trả về
 
     if (!context.mounted) return;
-    if (isLoggedIn) {
+
+    // Kiểm tra xem responseData có null không và có chứa key 'token' và 'customer'
+    if (responseData != null &&
+        responseData.containsKey('token') &&
+        responseData.containsKey('customer')) {
+      // Lấy token và customer_id từ responseData
+      String token = responseData['token']; // Lấy token
+      String customerId = responseData['customer']['CUSTOMER_ID'].toString(); // Lấy CUSTOMER_ID từ customer
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("✅ Đăng nhập thành công!")),
       );
 
-      // Store password in SharedPreferences after login
+      // Lưu token và customer_id vào SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString("password", password);
+      await prefs.setString("token", token);  // Lưu token
+      await prefs.setString("customer_id", customerId);  // Lưu customer_id
 
+      // Chuyển đến trang chính
       Navigator.push(
         context,
         PageRouteBuilder(
@@ -241,6 +249,7 @@ class LoginScreen extends StatelessWidget {
         ),
       );
     } else {
+      // Nếu không có dữ liệu hợp lệ
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("❌ Email hoặc mật khẩu không đúng!")),
       );

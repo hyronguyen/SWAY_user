@@ -3,15 +3,29 @@ import 'package:http/http.dart' as http;
 import '../data/model/user.dart';  
 
 class UserController {
-  Future<bool> login(String email, String password) async {
-    User user = User(email: email, password: password);  
+  Future<Map<String, dynamic>?> login(String email, String password) async {
+    User user = User(email: email, password: password);
 
     final response = await apiLogin(user);
 
     if (response.statusCode == 200) {
-      return true;
+      // Parse the response body to extract the token and customer_id
+      var responseData = json.decode(response.body);
+      return responseData['data'];  // Return the data containing both the token and customer_id
     } else {
-      return false;
+      return null;  // Return null if login fails
+    }
+  }
+
+  Future<Map<String, dynamic>?> getCustomer(int customerId, String token) async {
+    final response = await apiGetInformationCustomer(customerId, token);
+
+    if (response.statusCode == 200) {
+      var responseData = json.decode(response.body);
+      return responseData;  // Trả về dữ liệu khách hàng
+    } else {
+      print('Lỗi khi gọi API: ${response.statusCode}');
+      return null;
     }
   }
 
@@ -54,6 +68,21 @@ class UserController {
       return false;
     }
   }
+
+Future<http.Response> apiGetInformationCustomer(int customerId, String token) async {
+  const String url = "http://10.0.2.2:8080/api/usermanagement/get-information-customer"; 
+  
+  final response = await http.get(
+    Uri.parse('$url?customer_id=$customerId'), 
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': token, 
+    },
+  );
+  
+  return response;
+}
+
 
 
   Future<http.Response> apiSignUp(User user) async {
