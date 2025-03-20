@@ -57,9 +57,20 @@ void initState() {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? storedCustomerId = prefs.getString('customer_id');
+
       setState(() {
         customerid = storedCustomerId ?? "customer_id_test";
       });
+
+      // Nếu customer_id là "customer_id_test", hiển thị thông báo
+      if (storedCustomerId == "customer_id_test") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Bạn đang ở chế độ test với ID: customer_id_test"),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (e) {
       debugPrint("_loadCustomerId: $e");
     }
