@@ -5,6 +5,7 @@ import 'package:sway/mainpage.dart';
 import 'package:sway/page/authentication/login.dart';
 import 'package:sway/page/booking/chat.dart';
 import 'package:sway/page/onboarding/onboarding.dart';
+import 'package:sway/testscreen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -23,6 +24,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: backgroundblack,
         ),
-        home:Mainpage ());
+        home:TestScreen ());
   }
 }
