@@ -42,6 +42,8 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController phoneNumberController = TextEditingController();
   String _selectedCountryCode = '+84'; // Mã quốc gia mặc định (Việt Nam)
 
+
+// Layput -------------------------------------------------------------------------------------
   @override 
   Widget build(BuildContext context){
     return Scaffold(

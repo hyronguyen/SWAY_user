@@ -161,8 +161,7 @@ class _TripPickerState extends State<TripPicker> {
     if (query.isEmpty) return;
 
     final url =
-        'https://api.mapbox.com/geocoding/v5/mapbox.places/${Uri.encodeComponent(query)}.json'
-        '?access_token=$mapboxAccessToken&autocomplete=true&types=address,place,neighborhood,locality&country=VN';
+        'https://api.mapbox.com/search/geocode/v6/forward?q=${Uri.encodeComponent(query)}&proximity=ip&country=VN&language=vi&access_token=$mapboxAccessToken';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -173,7 +172,8 @@ class _TripPickerState extends State<TripPicker> {
           _suggestions =
               (data['features'] as List).map<Map<String, dynamic>>((item) {
             return {
-              'place_name': item['place_name'],
+              'place_name': item['properties']['name'],
+              'address': item['properties']['full_address'],
               'latitude': item['geometry']['coordinates'][1],
               'longitude': item['geometry']['coordinates'][0],
             };
@@ -271,7 +271,6 @@ class _TripPickerState extends State<TripPicker> {
             thickness: 1, // Độ dày của đường kẻ
             height: 20, // Khoảng cách giữa các thành phần trên và dưới Divider
           ),
-          
 
           // Danh sách gợi ý hoặc Danh sách lịch sử
           Expanded(
@@ -381,11 +380,21 @@ class _TripPickerState extends State<TripPicker> {
                   title: Text(
                     _suggestions[index]['place_name'],
                     style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
+                        color: primary, fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(
-                    "Lat: ${_suggestions[index]['latitude']}, Lng: ${_suggestions[index]['longitude']}",
-                    style: TextStyle(color: Colors.grey),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _suggestions[index]['address'], // Dòng địa chỉ
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w500),
+                      ),
+                      Text(
+                        "Lat: ${_suggestions[index]['latitude']}, Lng: ${_suggestions[index]['longitude']}", // Dòng lat/lng
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
                   ),
                   onTap: () {
                     if (_activeController != null) {
