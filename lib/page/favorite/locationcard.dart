@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class LocationCard extends StatelessWidget {
   final String title;
   final String address;
+  final VoidCallback onRemove;
 
   const LocationCard({
     super.key,
     required this.title,
     required this.address,
+    required this.onRemove,
   });
 
   @override
@@ -30,9 +32,10 @@ class LocationCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.location_on,
             size: 24,
+            color: Colors.white,
           ),
           const SizedBox(width: 6),
           Expanded(
@@ -59,18 +62,28 @@ class LocationCard extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: EdgeInsets.all(5), // Khoảng cách xung quanh biểu tượng
-            decoration: BoxDecoration(
-              color: Colors.red, // Màu nền đỏ
-              shape: BoxShape.circle, // Để làm nền hình tròn
-            ),
-            child: Icon(
-              Icons.remove, // Biểu tượng dấu trừ
-              size: 18, // Kích thước biểu tượng
-              color: Colors.white, // Màu sắc của biểu tượng (trắng)
-            ),
-          )
+          Material(
+  color: Colors.transparent,
+  child: InkWell(
+    onTap: () {
+      debugPrint("🔥 Nút xóa được bấm!");
+      onRemove();
+    },
+    borderRadius: BorderRadius.circular(20),
+    child: Container(
+      padding: const EdgeInsets.all(6),
+      decoration: const BoxDecoration(
+        color: Colors.red,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.remove,
+        size: 18,
+        color: Colors.white,
+      ),
+    ),
+  ),
+),
         ],
       ),
     );

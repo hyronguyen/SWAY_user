@@ -68,19 +68,27 @@ class UserController {
     }
   }
 
-  Future<http.Response> apiGetInformationCustomer(int customerId, String token) async {
-    const String url = "http://10.0.2.2:8080/api/usermanagement/get-information-customer"; 
-    
-    final response = await http.get(
-      Uri.parse('$url?customer_id=$customerId'), 
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token, 
-      },
-    );
-    
-    return response;
+Future<http.Response> apiGetInformationCustomer(int customerId, String token) async {
+  final String url = 'http://10.0.2.2:8080/api/UserManagement/get-infomation-customer';
+
+  // Kiểm tra token có bị trùng "Bearer " hay không
+  if (!token.startsWith("Bearer ")) {
+    token = "Bearer $token"; // Chỉ thêm "Bearer " nếu chưa có
   }
+
+  print("Token gửi đi: $token"); // Debug để kiểm tra token đúng chưa
+
+  final response = await http.get(
+    Uri.parse('$url?customer_id=$customerId'), 
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': token, 
+    },
+  );
+
+  return response;
+}
+
 
   Future<http.Response> apiSignUp(User user) async {
     const String url = "http://10.0.2.2:8080/api/usermanagement/signup"; 
@@ -138,4 +146,83 @@ class UserController {
     );
     return response;
   }
+
+Future<bool> updateCustomerInfo(
+    String customerId, String name, String phone, String birthday, String gender, String token) async {
+  
+  print("✅ DEBUG: Token truyền vào API = $token"); // Kiểm tra token có bị lỗi không
+
+  final response = await http.put(
+    Uri.parse("http://10.0.2.2:8080/api/usermanagement/update-personal-info?customer_id=$customerId"),
+    headers: {
+      'Authorization': token,  // ✅ Đảm bảo gửi đúng token
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode({
+      'FULLNAME': name,
+      'PHONE': phone,
+      'BIRTHDAY': birthday.isNotEmpty ? _formatDate(birthday) : "",
+      'GENDER': gender,
+    }),
+  );
+
+  print("✅ DEBUG: Response Code = ${response.statusCode}");
+  print("✅ DEBUG: Response Body = ${response.body}");
+
+  return response.statusCode == 200;
+}
+
+
+Future<Map<String, dynamic>> apiChangePassword(
+    String customerId, String oldPassword, String newPassword, String confirmPassword, String token) async {
+
+  const String url = "http://10.0.2.2:8080/api/usermanagement/change-password";
+
+  try {
+    // ✅ Chắc chắn customer_id được gửi dưới dạng String
+    final response = await http.put(
+      Uri.parse("$url?customer_id=${Uri.encodeComponent(customerId)}"), // 👈 Encode String để tránh lỗi URL
+      headers: {
+        'Authorization': '$token', // ✅ Đảm bảo token đúng định dạng
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'oldPassword': oldPassword,
+        'newPassword': newPassword,
+        'confirmPassword': confirmPassword,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return {"status": "success", "message": "Đổi mật khẩu thành công!"};
+    } else {
+      final errorData = jsonDecode(response.body);
+      return {
+        "status": "error",
+        "message": errorData["message"] ?? "Đổi mật khẩu thất bại!"
+      };
+    }
+  } catch (e) {
+    return {"status": "error", "message": "Lỗi kết nối server! Vui lòng thử lại."};
+  }
+}
+
+
+
+
+
+
+String _formatDate(String date) {
+  try {
+    List<String> parts = date.split("/");
+    if (parts.length == 3) {
+      return "${parts[2]}-${parts[1]}-${parts[0]}"; // Chuyển sang định dạng YYYY-MM-DD
+    }
+  } catch (e) {
+    print("❌ Lỗi định dạng ngày: $e");
+  }
+  return "";
+}
+
+
 }
