@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sway/config/colors.dart';
-import 'package:sway/mainpage.dart';
-import 'package:sway/page/authentication/login.dart';
 import 'package:sway/page/home/trip_picker.dart';
 import 'package:sway/page/onboarding/onboarding.dart';
 
