@@ -8,6 +8,7 @@ import 'package:sway/config/colors.dart';
 import 'package:sway/page/home/confirmation.dart';
 import 'package:sway/page/home/map_picker.dart';
 import 'package:sway/page/home/map_picker_des.dart';
+import 'package:sway/page/favorite/favorite.dart';
 
 class TripPicker extends StatefulWidget {
   @override
@@ -23,6 +24,8 @@ class _TripPickerState extends State<TripPicker> {
   LatLng? pickupLocation;
   LatLng? destinationLocation;
   List<Map<String, dynamic>> _suggestions = [];
+  List<Map<String, dynamic>> _favoriteLocations = [];
+
   // Chứa cả tên địa điểm & tọa độ
   TextEditingController? _activeController; // Lưu ô nhập liệu đang chọn
 
@@ -30,7 +33,8 @@ class _TripPickerState extends State<TripPicker> {
   @override
   void initState() {
     super.initState();
-    _loadCustomerId(); // Lấy CUSTOMER id từ SharePreferences
+    _loadCustomerId(); 
+      _fetchFavoriteLocations(); // Lấy CUSTOMER id từ SharePreferences
   }
 
   @override
@@ -119,6 +123,140 @@ class _TripPickerState extends State<TripPicker> {
       },
     );
   }
+  void _addToFavorite(int index) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString("token");
+  String? customerId = prefs.getString("customer_id");
+
+  if (token == null || customerId == null) {
+    debugPrint("Lỗi: Chưa đăng nhập hoặc thiếu thông tin người dùng.");
+    return;
+  }
+
+  String placeName = _suggestions[index]['place_name'];
+  List<String> parts = placeName.split(',').map((e) => e.trim()).toList(); // Tách và loại bỏ khoảng trắng thừa
+
+  String locationName = parts.length > 2 ? parts.sublist(0, parts.length - 2).join(", ") : parts[0];  
+  String address = parts.length > 2 ? parts.sublist(parts.length - 2).join(", ") : parts.join(", ");
+
+  var url = Uri.parse("http://10.0.2.2:8080/api/FavoriteManagement/add-favorite-location");
+  var headers = {
+    "Content-Type": "application/json",
+    "Authorization": " $token",
+  };
+
+  var body = jsonEncode({
+    "location_name": locationName,
+    "address": address,
+    "coordinates": {
+      "lat": _suggestions[index]['latitude'],
+      "lng": _suggestions[index]['longitude']
+    }
+  });
+
+  debugPrint("📡 Gửi yêu cầu đến API: $url");
+  debugPrint("🔐 Headers: $headers");
+  debugPrint("📦 Body: $body");
+
+  try {
+    var response = await http.post(url, headers: headers, body: body);
+    debugPrint("📩 Phản hồi từ API: ${response.statusCode}");
+    debugPrint("📜 Nội dung phản hồi: ${response.body}");
+
+    if (response.statusCode == 200) {
+      debugPrint("✅ Đã thêm vào danh sách yêu thích!");
+    } else {
+      debugPrint("❌ Lỗi khi thêm vào danh sách yêu thích: ${response.body}");
+    }
+  } catch (e) {
+    debugPrint("❌ Lỗi khi gửi yêu cầu: $e");
+  }
+}
+
+Future<void> _fetchFavoriteLocations() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString("token");
+  String? customerId = prefs.getString("customer_id");
+
+  if (token == null || customerId == null) {
+    debugPrint("🚨 Lỗi: Chưa đăng nhập hoặc thiếu thông tin người dùng.");
+    return;
+  }
+
+  var url = Uri.parse("http://10.0.2.2:8080/api/FavoriteManagement/get-favorite-locations?customer_id=$customerId");
+  var headers = {
+    "Content-Type": "application/json",
+    "Authorization": " $token",
+  };
+
+  try {
+    var response = await http.get(url, headers: headers);
+    debugPrint("📥 Phản hồi API: ${response.statusCode}");
+    debugPrint("📄 Nội dung: ${response.body}");
+
+    if (response.statusCode == 200) {
+      var responseData = jsonDecode(response.body);
+      List<dynamic> data = responseData["data"];
+
+      setState(() {
+         _favoriteLocations = data.map((item) => {
+        "id": item["id"],
+        "latitude": item["coordinates"]["lat"],  // Đọc từ coordinates
+        "longitude": item["coordinates"]["lng"],
+         }).toList();
+        });
+
+    } else {
+      debugPrint("❌ Lỗi khi tải dữ liệu: ${response.body}");
+    }
+  } catch (e) {
+    debugPrint("❌ Lỗi khi gửi yêu cầu API: $e");
+  }
+}
+bool isFavorite(double latitude, double longitude) {
+  return _favoriteLocations.any((fav) =>
+    fav["latitude"] == latitude && fav["longitude"] == longitude);
+}
+
+Future<void> _removeFavorite(int locationId) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString("token");
+  String? customerId = prefs.getString("customer_id");
+
+  if (token == null || customerId == null) {
+    debugPrint("🚨 Lỗi: Chưa đăng nhập hoặc thiếu thông tin người dùng.");
+    return;
+  }
+
+  var url = Uri.parse(
+    "http://10.0.2.2:8080/api/FavoriteManagement/remove-favorite-location"
+    "?customer_id=$customerId&location_id=$locationId"
+  );
+
+  var headers = {
+    "Content-Type": "application/json",
+    "Authorization": token.trim(),  // Xóa dấu cách thừa
+  };
+
+  debugPrint("📤 Gửi request DELETE: $url");
+
+  try {
+    var response = await http.delete(url, headers: headers);
+    debugPrint("🗑️ Xóa địa điểm yêu thích: ${response.statusCode}");
+    debugPrint("📄 Nội dung: ${response.body}");
+
+    if (response.statusCode == 200) {
+      debugPrint("✅ Xóa địa điểm yêu thích thành công!");
+      setState(() {
+        _favoriteLocations.removeWhere((item) => item["id"] == locationId);
+      });
+    } else {
+      debugPrint("❌ Lỗi khi xóa địa điểm: ${response.body}");
+    }
+  } catch (e) {
+    debugPrint("❌ Lỗi khi gửi yêu cầu xóa: $e");
+  }
+}
 
   //Hàm mở map picker
   Future<void> _openMapPickerPickup() async {
@@ -401,30 +539,31 @@ class _TripPickerState extends State<TripPicker> {
                       _activeController!.text =
                           _suggestions[index]['place_name'];
 
-                      if (_activeController == _pickupController) {
-                        pickupLocation = LatLng(
-                          _suggestions[index]['latitude'],
-                          _suggestions[index]['longitude'],
-                        );
-                      }
-
-                      if (_activeController == _destinationController) {
-                        destinationLocation = LatLng(
-                          _suggestions[index]['latitude'],
-                          _suggestions[index]['longitude'],
-                        );
-                      }
+                    if (_activeController == _pickupController) {
+                      pickupLocation = LatLng(
+                        _suggestions[index]['latitude'],
+                        _suggestions[index]['longitude'],
+                      );
                     }
-                    setState(() => _suggestions = []);
-                  },
-                );
-              },
-            ),
+
+                    if (_activeController == _destinationController) {
+                      destinationLocation = LatLng(
+                        _suggestions[index]['latitude'],
+                        _suggestions[index]['longitude'],
+                      );
+                    }
+                  }
+                  setState(() => _suggestions = []);
+                },
+              );
+            },
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
 // Build Widget danh sách gợi ý
   Widget _buildActionButton(IconData icon, String label) {
