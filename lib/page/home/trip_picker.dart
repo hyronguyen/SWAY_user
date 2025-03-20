@@ -414,50 +414,67 @@ Future<void> _removeFavorite(int locationId) async {
                 : _buildHistoryList(),
           ),
 
-          // Nút xác nhận hành trình
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            child: FractionallySizedBox(
-              widthFactor: 1,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_pickupController.text.isEmpty ||
-                      _destinationController.text.isEmpty ||
-                      pickupLocation == null ||
-                      destinationLocation == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Please enter your trip details')),
-                    );
-                  } else {
-                    _showVehicleSelection(
-                        context); // Hiển thị menu chọn phương tiện
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primary, // Thay thế `primary` nếu cần
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: const Text(
-                  "Xác nhận hành trình",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+         Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+  child: FractionallySizedBox(
+    widthFactor: 1,
+    child: ElevatedButton(
+      onPressed: () {
+  if (_pickupController.text.isEmpty ||
+      _destinationController.text.isEmpty ||
+      pickupLocation == null ||
+      destinationLocation == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Please enter your trip details')),
+    );
+  } else {
+    // Kiểm tra nếu pickupLocation và destinationLocation không null
+    if (pickupLocation != null && destinationLocation != null) {
+      // Chuyển đến trang Confirmation với các tham số không null
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Confirmation(
+            pickupAddress: _pickupController.text,
+            destinationAddress: _destinationController.text,
+            pickupLocation: pickupLocation!,
+            destinationLocation: destinationLocation!,
+            vehicleType: "default", // Loại phương tiện có thể là mặc định hoặc do bạn chọn
+            customer_id: "customer_id",  // Thay thế "customer_id" bằng ID thực tế
           ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select valid locations')),
+      );
+    }
+  }
+},
+      
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primary, // Thay thế `primary` nếu cần
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+      ),
+      child: const Text(
+        "Xác nhận hành trình",
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  ),
+),
 
-          SizedBox(height: 20),
         ],
       ),
     );
   }
-
 // WIDGETS --------------------------------------------------------------------------------
   // Build Widget ô nhập liệu
   Widget _buildInputField({
