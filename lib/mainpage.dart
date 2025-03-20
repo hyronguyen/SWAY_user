@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sway/Controller/user_controller.dart';
+import 'package:sway/Controller/favorite_controller.dart';
+import 'package:sway/page/home/trip_picker.dart';
 import 'package:sway/config/colors.dart';
 import 'package:sway/page/favorite/favorite.dart';
 import 'package:sway/page/home/map_picker.dart';
@@ -13,19 +15,23 @@ import 'dart:convert';
 
 class Mainpage extends StatefulWidget {
   const Mainpage({super.key});
+  
 
   @override
   State<Mainpage> createState() => _MainpageState();
 }
 
 class _MainpageState extends State<Mainpage> {
+  final TextEditingController _destinationController = TextEditingController();
+
   String fullname = ''; 
   String email = ''; 
   final MainMenu mainMenu = MainMenu();
   final MapPicker mappicker = MapPicker();
   final WalletScreen walletScreen = WalletScreen();
   final SettingsScreen settingsScreen = SettingsScreen();
-  final FavoriteScreen favoriteScreen = FavoriteScreen();
+ FavoriteScreen get favoriteScreen => FavoriteScreen(destinationController: _destinationController);
+
 
   int _selectedIndex = 0;
 

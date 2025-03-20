@@ -12,14 +12,19 @@ import 'package:sway/page/home/map_picker_des.dart';
 import 'package:sway/Controller/favorite_controller.dart';
 
 class TripPicker extends StatefulWidget {
+  final String? initialAddress; // Nhận địa chỉ từ FavoriteScreen
+   const TripPicker({super.key, this.initialAddress});
+  
   @override
   _TripPickerState createState() => _TripPickerState();
+  
 
 }
 
 class _TripPickerState extends State<TripPicker> {
   // LOCAL VARIBLES //////////////////////////////////////////////////////////////////////////////
   final TextEditingController _pickupController = TextEditingController();
+  
   final TextEditingController _destinationController = TextEditingController();
   String? customerid;
   String mapboxAccessToken = map_box_token;
@@ -39,7 +44,10 @@ class _TripPickerState extends State<TripPicker> {
 void initState() {
   super.initState();
   _loadCustomerId(); 
-  _fetchFavorites(); // Thay đổi từ _fetchFavoriteLocations() thành _fetchFavorites()
+  _fetchFavorites();
+  if (widget.initialAddress != null) {
+      _destinationController.text = widget.initialAddress!; // Cập nhật ô nhập điểm đến
+    } // Thay đổi từ _fetchFavoriteLocations() thành _fetchFavorites()
 }
 
 
