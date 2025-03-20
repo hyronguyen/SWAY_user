@@ -23,6 +23,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: backgroundblack,
         ),
-        home: ChatScreen());
+        home:Mainpage ());
   }
 }

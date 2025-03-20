@@ -1,42 +1,7 @@
 import 'package:flutter/material.dart';
 
-class LanguageModel {
-  final String name;
-  final String nativeName;
-  final String flagCode;
-  bool isSelected; // Removed final
-
-  LanguageModel({
-    required this.name,
-    required this.nativeName,
-    required this.flagCode,
-    this.isSelected = false,
-  });
-}
-
-class LanguageSelectionScreen extends StatefulWidget {
-  const LanguageSelectionScreen({super.key});
-
-  @override
-  _LanguageSelectionScreenState createState() =>
-      _LanguageSelectionScreenState();
-}
-
-class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
-  final List<LanguageModel> languages = [
-    LanguageModel(
-        name: 'English',
-        nativeName: 'English',
-        flagCode: 'us',
-        isSelected: true),
-    LanguageModel(name: 'Hindi', nativeName: 'Hindi', flagCode: 'in'),
-    LanguageModel(name: 'Arabic', nativeName: 'Arabic', flagCode: 'ae'),
-    LanguageModel(name: 'French', nativeName: 'French', flagCode: 'fr'),
-    LanguageModel(name: 'German', nativeName: 'German', flagCode: 'de'),
-    LanguageModel(name: 'Portuguese', nativeName: 'Portuguese', flagCode: 'pt'),
-    LanguageModel(name: 'Turkish', nativeName: 'Turkish', flagCode: 'tr'),
-    LanguageModel(name: 'Dutch', nativeName: 'Nederlands', flagCode: 'nl'),
-  ];
+class LanguageScreen extends StatelessWidget {
+  const LanguageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -49,89 +14,67 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Đổi ngôn ngữ',
+          'Ngôn ngữ',
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: languages.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[900],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ListTile(
-                    leading: SizedBox(
-                      width: 30,
-                      height: 20,
-                      child: Image.asset(
-                        'assets/flags/${languages[index].flagCode}.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    title: Text(
-                      languages[index].name,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Text(
-                      languages[index].nativeName,
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
-                    ),
-                    trailing: languages[index].isSelected
-                        ? Icon(Icons.check_circle, color: Colors.blue)
-                        : null,
-                    onTap: () {
-                      setState(() {
-                        for (var lang in languages) {
-                          lang.isSelected = false;
-                        }
-                        languages[index].isSelected = true;
-                      });
-                    },
-                  ),
-                );
-              },
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/vietnamflag.png',
+              width: 80,
+              height: 50,
+              fit: BoxFit.contain,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                // Handle save language selection
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    Colors.amber, // Updated from primary to backgroundColor
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+            SizedBox(height: 16),
+            Text(
+              'Ngôn ngữ hiện tại:',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 20,
               ),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Text(
-                  'Lưu',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Tiếng Việt',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Text(
+                'Ứng dụng sử dụng Tiếng Việt để mang đến trải nghiệm dễ dàng và tiện lợi cho người dùng.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
                 ),
               ),
             ),
-          ),
-        ],
+            SizedBox(height: 20),
+            Text(
+              '"Trải nghiệm dịch vụ nhanh chóng và tiện lợi với Tiếng Việt"',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.amber,
+                fontSize: 18,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            SizedBox(height: 30),
+            Icon(
+              Icons.language,
+              color: Colors.blueAccent,
+              size: 50,
+            ),
+          ],
+        ),
       ),
     );
   }
