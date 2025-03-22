@@ -20,26 +20,8 @@ class AddFundsScreen extends StatefulWidget {
 }
 
 class _AddFundsScreenState extends State<AddFundsScreen> {
-  int _selectedMethodIndex =
-      0; // Chỉ số của phương thức được chọn mặc định là 0
-
-  final List<Map<String, String>> paymentMethods = [
-    {
-      'logo': 'assets/images/visa.png',
-      'method': '**** **** **** 8970',
-      'expires': '12/26',
-    },
-    {
-      'logo': 'assets/images/mastercard.png',
-      'method': '**** **** **** 8970',
-      'expires': '12/26',
-    },
-    {
-      'logo': 'assets/images/paypal.png',
-      'method': 'mailaddress@mail.com',
-      'expires': '12/26',
-    },
-  ];
+  // Gán giá trị mặc định là 'PayOS'
+  String? selectedPaymentMethod = 'PayOS'; // Đặt giá trị mặc định là 'PayOS'
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +41,7 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
           ],
         ),
         title: const Text(
-          "Nạp My Wallet",
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          "Nạp tiền vào ví",
         ),
         centerTitle: true,
       ),
@@ -83,24 +64,6 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
               style: TextStyle(color: Colors.white),
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            AddPaymentMethodScreen()), // Chuyển đúng trang cần mở
-                  );
-                },
-                child: Text(
-                  "Thêm phương thức",
-                  style: TextStyle(color: Color(0xFFEDAE10)),
-                ),
-              ),
-            ),
             SizedBox(height: 16),
             Text(
               "Chọn phương thức",
@@ -111,27 +74,51 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
               ),
             ),
             SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                itemCount:
-                    paymentMethods.length, // Số lượng phương thức thanh toán
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedMethodIndex = index;
-                      });
-                    },
-                    child: PaymentMethodCard(
-                      logo: paymentMethods[index]['logo']!,
-                      method: paymentMethods[index]['method']!,
-                      expires: paymentMethods[index]['expires']!,
-                      isSelected: _selectedMethodIndex == index,
+            Column(
+              children: [
+                // Phương thức thanh toán PayOS
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedPaymentMethod = 'PayOS';
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: selectedPaymentMethod == 'PayOS' ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  );
-                },
-              ),
+                    child: RadioListTile<String>(
+                      value: 'PayOS',
+                      groupValue: selectedPaymentMethod,
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedPaymentMethod = value;
+                        });
+                      },
+                      title: Row(
+                        children: [
+                          Image.asset(
+                            'assets/images/payos.png', // Hình ảnh PayOS
+                            width: 30, // Đặt kích thước cho ảnh
+                            height: 30,
+                          ),
+                          SizedBox(width: 16),
+                          Text(
+                            "Thanh toán PayOS",
+                            style: TextStyle(color: Colors.black), // Màu chữ đen khi chọn
+                          ),
+                        ],
+                      ),
+                      activeColor: Color(0xFFEDAE10), // Màu vàng khi được chọn
+                    ),
+                  ),
+                ),
+                // Các phương thức thanh toán khác có thể thêm vào đây nếu cần
+              ],
             ),
+            SizedBox(height: 16),
+            Expanded(child: Container()), // Khoảng trống
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFFEDAE10), // Màu nền vàng
@@ -140,56 +127,26 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
                   borderRadius: BorderRadius.circular(8), // Góc bo tròn
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                // Xử lý xác nhận khi chọn phương thức thanh toán
+                if (selectedPaymentMethod != null) {
+                  // Tiến hành thanh toán hoặc xác nhận
+                } else {
+                  // Hiển thị thông báo nếu chưa chọn phương thức thanh toán
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Vui lòng chọn phương thức thanh toán')),
+                  );
+                }
+              },
               child: Text(
-                "Confirm",
+                "Xác nhận",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 16), // Màu chữ trắng và kích thước chữ
               ),
-            )
+            ),
+            const SizedBox(height: 20),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class PaymentMethodCard extends StatelessWidget {
-  final String logo;
-  final String method;
-  final String expires;
-  final bool isSelected;
-
-  PaymentMethodCard({
-    required this.logo,
-    required this.method,
-    required this.expires,
-    required this.isSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: isSelected
-          ? Color(0xFFFFF9C4)
-          : Colors.grey[900], // Màu nền khi được chọn
-      shape: RoundedRectangleBorder(
-        side: BorderSide(
-          color: isSelected
-              ? Color(0xFFEDAE10)
-              : Colors.transparent, // Màu viền khi được chọn
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ListTile(
-        leading: Image.asset(logo, width: 40), // Hiển thị logo
-        title: Text(method,
-            style: TextStyle(color: Colors.black)), // Màu chữ khi được chọn
-        subtitle: Text(
-          "Expires: $expires",
-          style: TextStyle(color: Colors.black54), // Màu chữ phụ khi được chọn
         ),
       ),
     );

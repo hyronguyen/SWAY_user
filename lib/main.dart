@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:sway/config/colors.dart';
+import 'package:sway/mainpage.dart';
 import 'package:sway/testscreen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: backgroundblack,
         ),
-        home:TestScreen ());
+        home:Mainpage());
   }
 }

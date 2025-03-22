@@ -37,14 +37,8 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Cài đặt',
-          style: TextStyle(color: Colors.white),
-        ),
+
+
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
