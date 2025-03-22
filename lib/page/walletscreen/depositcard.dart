@@ -1,18 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sway/page/Walletscreen/addmethod.dart'; // Import trang AddPaymentMethodScreen
-
-class WalletApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      // home: WalletScreen(
-      //   selectedIndex: 2,
-      //   onItemTapped: (index) {}, // Hàm xử lý khi chọn mục khác
-      // ),
-    );
-  }
-}
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:qr_flutter/qr_flutter.dart';  // Use the necessary import
+import 'package:shared_preferences/shared_preferences.dart';  // Import SharedPreferences
 
 class AddFundsScreen extends StatefulWidget {
   @override
@@ -20,13 +10,76 @@ class AddFundsScreen extends StatefulWidget {
 }
 
 class _AddFundsScreenState extends State<AddFundsScreen> {
-  // Gán giá trị mặc định là 'PayOS'
-  String? selectedPaymentMethod = 'PayOS'; // Đặt giá trị mặc định là 'PayOS'
+  String? selectedPaymentMethod = 'PayOS';
+  TextEditingController amountController = TextEditingController();
+  String qrData = '';  // Biến lưu trữ dữ liệu cho mã QR
+  bool isLoading = false;  // Trạng thái đang tải
+
+  Future<void> depositFunds() async {
+    final amountText = amountController.text;
+    double? amount = double.tryParse(amountText);
+
+    if (amount == null || amount <= 0 || amount < 0.01 || amount > 10000000000) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Số tiền không hợp lệ.')));
+      return;
+    }
+
+    setState(() {
+      isLoading = true;  // Bắt đầu tải khi người dùng nhấn xác nhận
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
+
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Token không hợp lệ')));
+        setState(() {
+          isLoading = false;  // Dừng tải nếu không có token
+        });
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/api/WalletManagement/deposit-wallet'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': '$token',
+        },
+        body: jsonEncode({
+          'amount': amount,
+          'description': 'Nạp tiền vào ví',
+          'status': 'PENDING',
+          'paymentMethod': selectedPaymentMethod,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        String qrCode = data['paymentResponse']['qrCode'];
+        setState(() {
+          qrData = qrCode;
+          isLoading = false;  // Dừng tải sau khi nhận dữ liệu
+        });
+      } else {
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Lỗi xảy ra')));
+        setState(() {
+          isLoading = false;  // Dừng tải nếu có lỗi
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Không thể kết nối đến server')));
+      setState(() {
+        isLoading = false;  // Dừng tải nếu gặp lỗi
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Màu nền đen
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
@@ -40,9 +93,7 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
             ),
           ],
         ),
-        title: const Text(
-          "Nạp tiền vào ví",
-        ),
+        title: const Text("Nạp tiền vào ví"),
         centerTitle: true,
       ),
       body: Padding(
@@ -51,6 +102,7 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
+              controller: amountController,
               decoration: InputDecoration(
                 labelText: "Nhập số tiền",
                 labelStyle: TextStyle(color: Colors.white),
@@ -76,7 +128,6 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
             SizedBox(height: 8),
             Column(
               children: [
-                // Phương thức thanh toán PayOS
                 GestureDetector(
                   onTap: () {
                     setState(() {
@@ -99,51 +150,63 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
                       title: Row(
                         children: [
                           Image.asset(
-                            'assets/images/payos.png', // Hình ảnh PayOS
-                            width: 30, // Đặt kích thước cho ảnh
+                            'assets/images/payos.png',
+                            width: 30,
                             height: 30,
                           ),
                           SizedBox(width: 16),
                           Text(
                             "Thanh toán PayOS",
-                            style: TextStyle(color: Colors.black), // Màu chữ đen khi chọn
+                            style: TextStyle(color: Colors.black),
                           ),
                         ],
                       ),
-                      activeColor: Color(0xFFEDAE10), // Màu vàng khi được chọn
+                      activeColor: Color(0xFFEDAE10),
                     ),
                   ),
                 ),
-                // Các phương thức thanh toán khác có thể thêm vào đây nếu cần
               ],
             ),
             SizedBox(height: 16),
-            Expanded(child: Container()), // Khoảng trống
+            if (qrData.isNotEmpty)
+              Column(
+                children: [
+                  SizedBox(height: 20),
+                  Text(
+                    "Mã QR của bạn:",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(height: 10),
+                  Center(
+                    child: QrImageView(
+                      data: qrData,
+                      version: QrVersions.auto,
+                      size: 320.0,
+                      gapless: false,
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            Expanded(child: Container()),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFEDAE10), // Màu nền vàng
-                minimumSize: Size(double.infinity, 50), // Kích thước nút
+                backgroundColor: Color(0xFFEDAE10),
+                minimumSize: Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // Góc bo tròn
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () {
-                // Xử lý xác nhận khi chọn phương thức thanh toán
-                if (selectedPaymentMethod != null) {
-                  // Tiến hành thanh toán hoặc xác nhận
-                } else {
-                  // Hiển thị thông báo nếu chưa chọn phương thức thanh toán
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Vui lòng chọn phương thức thanh toán')),
-                  );
-                }
-              },
-              child: Text(
-                "Xác nhận",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16), // Màu chữ trắng và kích thước chữ
-              ),
+              onPressed: isLoading ? null : depositFunds,  // Disable button when loading
+              child: isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text(
+                      "Xác nhận",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
             ),
             const SizedBox(height: 20),
           ],

@@ -219,10 +219,6 @@ class LoginScreen extends StatelessWidget {
       String token = responseData['token']; // Lấy token
       String customerId = responseData['customer']['CUSTOMER_ID'].toString(); // Lấy CUSTOMER_ID từ customer
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("✅ Đăng nhập thành công!")),
-      );
-
       // Lưu token và customer_id vào SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString("token", token);  // Lưu token
