@@ -84,8 +84,8 @@ class _WalletScreenState extends State<WalletScreen> {
               const SizedBox(height: 8),
               Text(
                 _isAmountVisible
-                    ? "đ ${totalAmount.toStringAsFixed(0)}"
-                    : "****", // Hiển thị số dư hoặc dấu "****" khi ẩn
+                    ? "****"
+                    : "đ ${totalAmount.toStringAsFixed(0)}", // Hiển thị số dư hoặc dấu "****" khi ẩn
                 style: TextStyle(
                   fontSize: 22, // Kích thước chữ lớn hơn cho số dư
                   fontWeight: FontWeight.w700, // Đậm hơn để nổi bật
