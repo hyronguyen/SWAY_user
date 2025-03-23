@@ -17,6 +17,8 @@ class Trip {
   final String price;
   final String vehicleImage;
   final String serviceType;
+  final String payment_method;
+  final String endTime;
 
   Trip({
     required this.id,
@@ -28,6 +30,8 @@ class Trip {
     required this.price,
     required this.vehicleImage,
     required this.serviceType,
+    required this.payment_method,
+    required this.endTime
   });
 
   factory Trip.fromJson(Map<String, dynamic> json) {
@@ -41,6 +45,9 @@ class Trip {
       price: json['TOTAL_FARE'].toString(),
       vehicleImage: "assets/images/type_taxi.png", // You can adjust this to dynamically load images
       serviceType: json['PROMOTION_CODE'],  // Assuming service type is related to promotion code
+      payment_method: json['PAYMENT_METHOD'],
+      endTime: json['END_TIME'],
+
     );
   }
 }

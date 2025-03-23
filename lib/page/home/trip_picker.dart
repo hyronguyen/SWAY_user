@@ -12,14 +12,19 @@ import 'package:sway/page/home/map_picker_des.dart';
 import 'package:sway/Controller/favorite_controller.dart';
 
 class TripPicker extends StatefulWidget {
+  final String? initialAddress; // Nhận địa chỉ từ FavoriteScreen
+   const TripPicker({super.key, this.initialAddress});
+  
   @override
   _TripPickerState createState() => _TripPickerState();
+  
 
 }
 
 class _TripPickerState extends State<TripPicker> {
   // LOCAL VARIBLES //////////////////////////////////////////////////////////////////////////////
   final TextEditingController _pickupController = TextEditingController();
+  
   final TextEditingController _destinationController = TextEditingController();
   String? customerid;
   String mapboxAccessToken = map_box_token;
@@ -39,7 +44,10 @@ class _TripPickerState extends State<TripPicker> {
 void initState() {
   super.initState();
   _loadCustomerId(); 
-  _fetchFavorites(); // Thay đổi từ _fetchFavoriteLocations() thành _fetchFavorites()
+  _fetchFavorites();
+  if (widget.initialAddress != null) {
+      _destinationController.text = widget.initialAddress!; // Cập nhật ô nhập điểm đến
+    } // Thay đổi từ _fetchFavoriteLocations() thành _fetchFavorites()
 }
 
 
@@ -57,9 +65,20 @@ void initState() {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? storedCustomerId = prefs.getString('customer_id');
+
       setState(() {
         customerid = storedCustomerId ?? "customer_id_test";
       });
+
+      // Nếu customer_id là "customer_id_test", hiển thị thông báo
+      if (storedCustomerId == "customer_id_test") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Bạn đang ở chế độ test với ID: customer_id_test"),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (e) {
       debugPrint("_loadCustomerId: $e");
     }
@@ -439,8 +458,8 @@ Future<void> _removeFavorite(int locationId) async {
             destinationAddress: _destinationController.text,
             pickupLocation: pickupLocation!,
             destinationLocation: destinationLocation!,
-            vehicleType: "default", // Loại phương tiện có thể là mặc định hoặc do bạn chọn
-            customer_id: "customer_id",  // Thay thế "customer_id" bằng ID thực tế
+            vehicleType: "default", 
+            customer_id: customerid!, 
           ),
         ),
       );
@@ -470,7 +489,9 @@ Future<void> _removeFavorite(int locationId) async {
     ),
   ),
 ),
-const SizedBox(height: 10),
+const SizedBox(height: 10)
+
+
         ],
       ),
     );

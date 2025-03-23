@@ -20,6 +20,8 @@ class Confirmation extends StatefulWidget {
   final LatLng destinationLocation;
   final String vehicleType;
   final String customer_id;
+  final String selectedPaymentMethod = "Tiền mặt";
+
 
 ///////////////////////////////// CONTRUCTOR ////////////////////////////////////////
   Confirmation({
@@ -37,12 +39,23 @@ class Confirmation extends StatefulWidget {
 
 class _ConfirmationState extends State<Confirmation> {
 ///////////////////////////////// BIẾN CỤC BỘ ////////////////////////////////////////
+final List<Map<String, dynamic>> vehicles = [
+  {"id": "xemay", "name": "Xe máy", "price": "50.000đ", "icon": "assets/icon/xemay.png"},
+  {"id": "4cho", "name": "Xe 4 chỗ", "price": "106.000đ", "icon": "assets/icon/boncho.png"},
+  {"id": "luxury", "name": "Xe 7 chỗ", "price": "150.000đ", "icon": "assets/icon/luxury.png"},
+
+  {"id": "tietkiem", "name": "Xe Tiết Kiệm", "price": "44.000đ", "icon": "assets/icon/tietkiem.png"},
+];
 
   final MapController _mapController = MapController(); // Điều khiển bản đồ
   String _selectedPaymentMethod = 'Tiền mặt'; // Phương thức thanh toán
   String weatherCondition = "Đang tải..."; // Thông tin thời tiết
   double weatherFee = 0; // Phí thời tiết
   double fare = 0; // Tiền cước
+  String? selectedVehicle = "xemay";
+  bool isEnteringPromoCode = false;
+  TextEditingController promoCodeController = TextEditingController();
+
   bool findingDriver = true;
   StreamSubscription<DocumentSnapshot>? _rideSubscription;
   Set<String> _blockedDrivers = {}; // Danh sách tài xế bị chặn cục bộ
@@ -60,6 +73,13 @@ class _ConfirmationState extends State<Confirmation> {
       _fitMapToBounds();
     });
   }
+
+  void _selectVehicle(String id) {
+  setState(() {
+    selectedVehicle = id;
+  });
+}
+
 
   @override
   void dispose() {
@@ -111,6 +131,95 @@ class _ConfirmationState extends State<Confirmation> {
       },
     );
   }
+void _showTripDetails() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) {
+      return DraggableScrollableSheet(
+        initialChildSize: 0.6, // Kích thước mặc định (60% màn hình)
+        minChildSize: 0.4, // Kích thước nhỏ nhất (40% màn hình)
+        maxChildSize: 0.9, // Kích thước lớn nhất (90% màn hình)
+        builder: (context, scrollController) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tiêu đề
+                  Text(
+                    "Thông tin hành trình",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  Divider(color: Colors.grey),
+
+                  // Địa điểm đón
+                  _buildDetailRow(Icons.location_pin, "Điểm đón", widget.pickupAddress, Colors.red),
+
+                  // Địa điểm đến
+                  _buildDetailRow(Icons.flag, "Điểm đến", widget.destinationAddress, Colors.green),
+
+                  // Phương tiện
+                  _buildDetailRow(Icons.directions_car, "Phương tiện", widget.vehicleType, Colors.blue),
+
+                  // Phí cước + phí thời tiết
+                  _buildDetailRow(Icons.attach_money, "Giá cước", 
+                    "${formatCurrency(fare)} + phí thời tiết: ${formatCurrency(weatherFee)}", Colors.orange),
+
+                  // Phương thức thanh toán
+                  _buildDetailRow(Icons.payment, "Thanh toán", _selectedPaymentMethod, Colors.purple),
+
+                  // Thời tiết
+                  _buildDetailRow(Icons.wb_sunny, "Thời tiết", weatherCondition, Colors.yellow),
+
+                  // ID khách hàng
+                  _buildDetailRow(Icons.person, "ID khách hàng", widget.customer_id, Colors.cyan),
+
+                  SizedBox(height: 20),
+                  // Nút đóng
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow),
+                      child: Text("Đóng", style: TextStyle(color: Colors.black)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+// Hàm giúp tạo các dòng chi tiết (tái sử dụng)
+Widget _buildDetailRow(IconData icon, String title, String value, Color iconColor) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Row(
+      children: [
+        Icon(icon, color: iconColor),
+        SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            "$title: $value",
+            style: TextStyle(fontSize: 16, color: Colors.white),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   // Tính khoản các giữa 2 điểm
   double _calculateDistance(LatLng start, LatLng end) {
@@ -327,7 +436,42 @@ class _ConfirmationState extends State<Confirmation> {
       Navigator.pop(context);
     }
   }
-
+////HIển thị phương thức thanh toán
+void _showPaymentOptions() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.black, // Màu nền tối cho phù hợp giao diện
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return Wrap(
+        children: [
+          ListTile(
+            leading: Icon(Icons.money, color: Colors.white),
+            title: Text("Tiền mặt", style: TextStyle(color: Colors.white)),
+            onTap: () {
+              setState(() {
+                _selectedPaymentMethod = "Tiền mặt";
+              });
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.credit_card, color: Colors.white),
+            title: Text("Thẻ ngân hàng", style: TextStyle(color: Colors.white)),
+            onTap: () {
+              setState(() {
+                _selectedPaymentMethod = "Thẻ ngân hàng";
+              });
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
   // Kiểm tra trạng thái yêu cầu
   void _trackRequestStatus(String rideId, String driverId) {
     _rideSubscription?.cancel();
@@ -464,196 +608,252 @@ class _ConfirmationState extends State<Confirmation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,  // Giúp map hiển thị toàn màn hình
+
       appBar: AppBar(
-        title: Text('Thông tin cuốc xe'),
+        backgroundColor: Colors.transparent, // Làm trong suốt hoàn toàn
+        elevation: 0, // Xóa bóng
+        automaticallyImplyLeading: false, // Tắt nút leading mặc định để tránh hiệu ứng sáng
+        titleSpacing: 0, // Giữ khoảng cách hợp lý
+        
+        // Tạo nút back thủ công để tùy chỉnh màu sắc
+        leading: Container(
+          margin: const EdgeInsets.all(8), // Tạo khoảng cách đẹp hơn
+          decoration: BoxDecoration(
+            shape: BoxShape.circle, 
+            color: Colors.white.withOpacity(0.5), // Nền tròn màu đen trong suốt
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black), // Mũi tên trắng
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
       ),
+
+
       body: Column(
         children: [
           // PHẦN HIỆM THỊ BẢN ĐỒ
-          Expanded(
-            flex: 3,
-            child: FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: widget.pickupLocation,
-                initialZoom: 13.0,
-              ),
-              children: [
-                // BẢN ĐỒ
-                TileLayer(
-                  urlTemplate:
-                      'https://api.mapbox.com/styles/v1/hothanhgiang9/cm6n57t2u007201sg15ac9swb/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiaG90aGFuaGdpYW5nOSIsImEiOiJjbTZuMnhsbWUwMmtkMnFwZDhtNmZkcDJ0In0.0OXsluwAO14jJxPMUowtaA',
-                ),
-                
-                // Vẽ tuyến đường
-                FutureBuilder<List<LatLng>>(
-                  future: getRoute(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Lỗi khi tải tuyến đường'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(
-                          child: Text('Không có dữ liệu tuyến đường'));
-                    }
-
-                    return PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: snapshot.data!,
-                          strokeWidth: 3.0,
-                          color: path, // Màu đường đi
-                        ),
-                      ],
-                    );
-                  },
-                ),
-
-                MarkerLayer(
-                  // MARKET ĐIỂM ĐÓ Đón
-                  markers: [
-                    Marker(
-                      width: 80.0,
-                      height: 80.0,
-                      point: widget.pickupLocation,
-                      child: point_icon
-                    ),
-                    // MARKET ĐIỂM ĐÓ Đến
-                    Marker(
-                      width: 80.0,
-                      height: 80.0,
-                      point: widget.destinationLocation,
-                      child: des_icon
-                    ),
-                  ],
-                ),
-              ],
-            ),
+        Expanded(
+  flex: 3,
+  child: Stack(
+    children: [
+      // BẢN ĐỒ
+      FlutterMap(
+        mapController: _mapController,
+        options: MapOptions(
+          initialCenter: widget.pickupLocation,
+          initialZoom: 13.0,
+        ),
+        children: [
+          TileLayer(
+            urlTemplate:
+                'https://api.mapbox.com/styles/v1/hothanhgiang9/cm6n57t2u007201sg15ac9swb/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiaG90aGFuaGdpYW5nOSIsImEiOiJjbTZuMnhsbWUwMmtkMnFwZDhtNmZkcDJ0In0.0OXsluwAO14jJxPMUowtaA',
           ),
 
-          // PHẦN HIỆM THỊ THÔNG TIN
-          Expanded(
-            flex: 2,
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: backgroundblack,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10.0,
-                    spreadRadius: 2.0,
+          // VẼ TUYẾN ĐƯỜNG
+          FutureBuilder<List<LatLng>>(
+            future: getRoute(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Lỗi khi tải tuyến đường'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('Không có dữ liệu tuyến đường'));
+              }
+
+              return PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: snapshot.data!,
+                    strokeWidth: 3.0,
+                    color: path, // Màu đường đi
                   ),
                 ],
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Đường kẻ ngăn cách
-                    GestureDetector(
-                      onTap: () {
-                        double distance = _calculateDistance(
-                            widget.pickupLocation, widget.destinationLocation);
+              );
+            },
+          ),
 
-                        debugPrint('Điếm đón: ${widget.pickupAddress}');
-                        debugPrint(
-                            'Điểm đến: ${widget.destinationAddress} - cách $distance km');
-                        debugPrint('Phương tiện: ${widget.vehicleType}');
-                        debugPrint(
-                            'Phí cước: ${formatCurrency(fare)} + phí thời tiết: ${formatCurrency(weatherFee)}');
-                        debugPrint(
-                            'Phương thức thanh toán: $_selectedPaymentMethod');
-                        debugPrint('Thời tiết: $weatherCondition');
-                        debugPrint('ID khách hàng: ${widget.customer_id}');
-                      },
-                      child: Text(
-                        'Xem thêm',
-                        style: TextStyle(color: greymenu, fontSize: 16),
-                      ),
-                    ),
-                    Divider(color: greymenu),
-                    Row(
-                      children: [
-                        Icon(Icons.location_pin, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text(widget.pickupAddress,
-                            style: TextStyle(fontSize: 16)),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Icon(Icons.flag, color: Colors.green),
-                        SizedBox(width: 8),
-                        Text(widget.destinationAddress,
-                            style: TextStyle(fontSize: 16)),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Icon(Icons.directions_car, color: Colors.blue),
-                        SizedBox(width: 8),
-                        Text(widget.vehicleType,
-                            style: TextStyle(fontSize: 16)),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    // Phương thức thanh toán
-                    Row(
-                      children: [
-                        Icon(Icons.payment, color: Colors.orange),
-                        SizedBox(width: 8),
-                        Text('Phương thức thanh toán:',
-                            style: TextStyle(fontSize: 16)),
-                        Spacer(),
-                        TextButton(
-                          onPressed: _showPaymentMenu,
-                          child: Text(
-                            _selectedPaymentMethod,
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Divider(color: primary),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Text('Tổng cộng: ',
-                            style:
-                                TextStyle(fontSize: 16, color: Colors.white)),
-                        Text('${formatCurrency(fare)}',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: primary,
-                                fontWeight: FontWeight.bold)),
-                        Spacer(),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
+          // MARKER ĐIỂM ĐÓN & ĐIỂM ĐẾN
+          MarkerLayer(
+            markers: [
+              Marker(
+                width: 80.0,
+                height: 80.0,
+                point: widget.pickupLocation,
+                child: point_icon,
+              ),
+              Marker(
+                width: 80.0,
+                height: 80.0,
+                point: widget.destinationLocation,
+                child: des_icon,
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // NÚT FLOATING BUTTON HIỂN THỊ CHI TIẾT HÀNH TRÌNH
+      Positioned(
+        bottom: 10,  // Điều chỉnh vị trí
+        right: 10,    // Điều chỉnh vị trí
+        child: FloatingActionButton(
+          onPressed: _showTripDetails,  // Mở bottom sheet
+          backgroundColor: Colors.black.withOpacity(0.7),
+          child: Icon(Icons.route, color: Colors.white),
+          mini: true, // Kích thước nhỏ hơn
+        ),
+      ),
+    ],
+  ),
+),
+
+//////Chọn phương tiện
+     Container(
+  decoration: BoxDecoration(
+    color: Colors.black,
+    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  ),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          "Chọn phương tiện di chuyển",
+          style: TextStyle(
+            fontSize: 18, 
+            fontWeight: FontWeight.bold,
+            color: Colors.white
+          ),
+        ),
+      ),
+      
+     ...vehicles.map((vehicle) => Column(
+  children: [
+    InkWell(
+      onTap: () {
+        _selectVehicle(vehicle["id"]);
+      },
+      child: Container(
+        color: selectedVehicle == vehicle["id"] ? Colors.grey[900] : Colors.transparent, // Màu nền khi chọn
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Row(
+          children: [
+            Image.asset(vehicle["icon"], width: 30, height: 30),
+            SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                vehicle["name"],
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
+            Text(
+              vehicle["price"],
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    ),
+    Divider(height: 1, color: Colors.grey.shade800),
+  ],
+)).toList(),
+
+     Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      InkWell(
+        onTap: _showPaymentOptions, // Mở danh sách khi nhấn vào
+        child: Row(
+          children: [
+            Icon(Icons.account_balance_wallet, color: Colors.white),
+            SizedBox(width: 8),
+            Text(
+              _selectedPaymentMethod, // Hiển thị phương thức đang chọn
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            Icon(Icons.arrow_drop_down, color: Colors.white), // Mũi tên chỉ dropdown
+          ],
+        ),
+      ),
+    
+
+      // Nút chọn ưu đãi
+     isEnteringPromoCode 
+  ? Expanded(
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: promoCodeController,
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Nhập mã giảm giá",
+                hintStyle: TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: Colors.grey[900],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 8),
+
+        ],
+      ),
+    )
+  : TextButton(
+      onPressed: () {
+        setState(() {
+          isEnteringPromoCode = true; // Hiển thị ô nhập khi bấm nút
+        });
+      },
+      child: Text(
+        'Mã giảm giá',
+        style: TextStyle(color: Color(0xFFedae10), fontSize: 16),
+      ),
+    ),
+    ],
+  ),
+),
+
+                // Book button with padding
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
                           onPressed: () {
                             LatLng pickup = LatLng(
                                 widget.pickupLocation.latitude,
                                 widget.pickupLocation.longitude);
                             _choseDriver(pickup, widget.vehicleType);
                           },
-                          child: Text('Tìm tài xế',
-                              style: TextStyle(
-                                  fontSize: 16, color: backgroundblack)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFedae10),
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        'Đặt Xe',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ), 
+                  ),
                 ),
-              ),
+                const SizedBox(height: 10),
+              ],
             ),
           ),
         ],
