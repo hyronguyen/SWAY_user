@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:qr_flutter/qr_flutter.dart';  // Use the necessary import
-import 'package:shared_preferences/shared_preferences.dart';  // Import SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sway/mainpage.dart';  // Import SharedPreferences
 
 class AddFundsScreen extends StatefulWidget {
   @override
@@ -173,7 +174,7 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
                 children: [
                   SizedBox(height: 20),
                   Text(
-                    "Mã QR của bạn:",
+                    "Mã QR thanh toán:",
                     style: TextStyle(color: Colors.white),
                   ),
                   SizedBox(height: 10),
@@ -197,17 +198,72 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: isLoading ? null : depositFunds,  // Disable button when loading
+              onPressed: isLoading
+                  ? null
+                  : qrData.isEmpty
+                      ? depositFunds  // Nếu chưa có mã QR, gọi hàm depositFunds
+                      : () {
+                          // Hiển thị pop-up với thông điệp
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,  // Không thể đóng pop-up bằng cách nhấn bên ngoài
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                backgroundColor: Colors.white,  // Đặt nền của dialog thành màu trắng
+                                title: Text(
+                                  'Thông báo',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Hệ thống đang kiểm tra giao dịch. Ví sẽ được cập nhật sau vài phút.',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xFFEDAE10),  // Màu nút giống màu "Xác nhận"
+                                      minimumSize: Size(double.infinity, 50),  // Đảm bảo kích thước nút giống nhau
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),  // Bo góc nút
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      // Chuyển đến Mainpage và thay thế màn hình hiện tại
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => Mainpage()),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Quay về trang chủ',
+                                      style: TextStyle(
+                                        color: Colors.white,  // Màu chữ trắng
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
               child: isLoading
                   ? CircularProgressIndicator(color: Colors.white)
                   : Text(
-                      "Xác nhận",
+                      qrData.isEmpty ? "Xác nhận" : "Hoàn tất thanh toán",  // Hiển thị tên nút thay đổi
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                       ),
                     ),
             ),
+
+
             const SizedBox(height: 20),
           ],
         ),

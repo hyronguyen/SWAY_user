@@ -470,7 +470,7 @@ Future<void> _removeFavorite(int locationId) async {
     ),
   ),
 ),
-
+const SizedBox(height: 10),
         ],
       ),
     );
