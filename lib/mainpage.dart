@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sway/Controller/user_controller.dart';
 import 'package:sway/config/colors.dart';
 import 'package:sway/page/favorite/favorite.dart';
+import 'package:sway/page/history/history.dart';
 import 'package:sway/page/home/map_picker.dart';
 import 'package:sway/page/home/menu.dart';
 import 'package:sway/page/setting/setting_main.dart';
@@ -26,6 +27,7 @@ class _MainpageState extends State<Mainpage> {
   final WalletScreen walletScreen = WalletScreen();
   final SettingsScreen settingsScreen = SettingsScreen();
   final FavoriteScreen favoriteScreen = FavoriteScreen();
+  final HistoryPage historyScreen = HistoryPage();
 
   int _selectedIndex = 0;
 
@@ -73,7 +75,7 @@ class _MainpageState extends State<Mainpage> {
         nameWidgets = "Ví";
         return walletScreen;
       case 3:
-        nameWidgets = "Khuyến mãi";
+        nameWidgets = "Tin nhắn";
         break;
       case 4:
         nameWidgets = "Hồ sơ";
@@ -88,60 +90,62 @@ class _MainpageState extends State<Mainpage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: Builder(
-          builder: (context) => Container(
-            margin: EdgeInsets.fromLTRB(16, 8, 0, 7),
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              color: primary,
-              borderRadius: BorderRadius.circular(8),
+      appBar: _selectedIndex == -1
+          ? null // Không hiển thị AppBar khi ở màn hình Lịch sử
+          : AppBar(
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              leading: Builder(
+                builder: (context) => Container(
+                  margin: EdgeInsets.fromLTRB(16, 8, 0, 7),
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.menu, size: 24),
+                    color: backgroundblack,
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
+                  ),
+                ),
+              ),
+              title: Text(
+                _selectedIndex == 0
+                    ? ''
+                    : _selectedIndex == 1
+                        ? 'Yêu thích'
+                        : _selectedIndex == 2
+                            ? 'Ví'
+                            : _selectedIndex == 3
+                                ? 'Tin nhắn'
+                                : _selectedIndex == 4
+                                    ? 'Hồ sơ'
+                                    : '',
+                style: TextStyle(color: Colors.white),
+              ),
+              actions: <Widget>[
+                Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.notifications, size: 24),
+                    color: backgroundblack,
+                    onPressed: () {},
+                  ),
+                ),
+                SizedBox(width: 16),
+              ],
             ),
-            child: IconButton(
-              icon: Icon(Icons.menu, size: 24),
-              color: backgroundblack,
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            ),
-          ),
-        ),
-        title: Text(
-          _selectedIndex == 0
-              ? ''
-              : _selectedIndex == 1
-                  ? 'Yêu thích'
-                  : _selectedIndex == 2
-                      ? 'Ví'
-                      : _selectedIndex == 3
-                          ? 'Khuyến mãi'
-                          : _selectedIndex == 4
-                              ? 'Hồ sơ'
-                              : '',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: <Widget>[
-          Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              color: primary,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: IconButton(
-              icon: Icon(Icons.notifications, size: 24),
-              color: backgroundblack,
-              onPressed: () {},
-            ),
-          ),
-          SizedBox(width: 16),
-        ],
-      ),
       extendBodyBehindAppBar: true,
 
       // SIDE BAR MENU
@@ -223,7 +227,7 @@ class _MainpageState extends State<Mainpage> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  _selectedIndex = 2;
+                  _selectedIndex = -1;
                   setState(() {});
                 },
               ),
@@ -295,68 +299,77 @@ class _MainpageState extends State<Mainpage> {
           ),
         ),
       ),
-      floatingActionButton: SizedBox(
-        width: 75,
-        height: 85,
-        child: ClipPath(
-          clipper: HexagonClipper(),
-          child: Material(
-            color: Colors.amber,
-            elevation: 4,
-            shadowColor: Colors.black.withOpacity(0.3),
-            child: IconButton(
-              icon: const Icon(
-                Icons.account_balance_wallet_outlined,
-                color: Colors.black,
-                size: 32,
+      floatingActionButton: _selectedIndex == -1
+          ? null // Ẩn floatingActionButton khi ở màn hình Lịch sử
+          : SizedBox(
+              width: 75,
+              height: 85,
+              child: ClipPath(
+                clipper: HexagonClipper(),
+                child: Material(
+                  color: Colors.amber,
+                  elevation: 4,
+                  shadowColor: Colors.black.withOpacity(0.3),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: Colors.black,
+                      size: 32,
+                    ),
+                    onPressed: () {
+                      _onItemTapped(2);
+                    },
+                  ),
+                ),
               ),
-              onPressed: () {
-                _onItemTapped(2);
-              },
+            ),
+        floatingActionButtonLocation: _selectedIndex == -1
+          ? null // Ẩn floatingActionButtonLocation khi ở màn hình Lịch sử
+          : FloatingActionButtonLocation.centerDocked, // Chỉ hiển thị vị trí FAB khi không ở màn hình lịch sử
+
+      bottomNavigationBar: _selectedIndex == -1
+        ? null // Không hiển thị Bottom Navigation Bar khi ở màn hình Lịch sử
+        : Theme(
+            data: ThemeData(
+              canvasColor: Colors.black,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+            ),
+            child: BottomNavigationBar(
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: "Trang chủ",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.favorite),
+                  label: "Yêu thích",
+                ),
+                BottomNavigationBarItem(
+                  icon: SizedBox.shrink(), // Ẩn biểu tượng ở vị trí giữa
+                  label: "",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.chat_bubble),
+                  label: "Tin nhắn",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: "Hồ sơ",
+                ),
+              ],
+              currentIndex: _selectedIndex == -1 ? 0 : _selectedIndex,
+              selectedItemColor: Colors.amber[400],
+              unselectedItemColor: Colors.grey,
+              onTap: _onItemTapped,
+              showUnselectedLabels: true,
+              type: BottomNavigationBarType.fixed,
+              elevation: 0,
             ),
           ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: Theme(
-        data: ThemeData(
-          canvasColor: Colors.black,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-        ),
-        child: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: "Trang chủ",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite),
-              label: "Yêu thích",
-            ),
-            BottomNavigationBarItem(
-              icon: SizedBox.shrink(), // Ẩn biểu tượng ở vị trí giữa
-              label: "",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble),
-              label: "Tin nhắn",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: "Hồ sơ",
-            ),
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.amber[400],
-          unselectedItemColor: Colors.grey,
-          onTap: _onItemTapped,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-        ),
-      ),
-      body: _loadWidget(_selectedIndex),
+       body: _selectedIndex == -1
+        ? historyScreen  // Nếu _selectedIndex là -1, hiển thị màn hình "Lịch sử"
+        : _loadWidget(_selectedIndex),  // Nếu không, hiển thị các widget tương ứng với chỉ số hợp lệ
     );
   }
 }
