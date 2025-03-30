@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../controller/user_controller.dart'; // đường dẫn phù hợp với project bạn
 
 class DriverRatingScreen extends StatefulWidget {
   const DriverRatingScreen({super.key});
@@ -11,7 +13,7 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
   int rating = 5;
   int? selectedTipAmount;
   final TextEditingController _reviewController = TextEditingController();
-
+  final UserController _userController = UserController();
   final List<int> tipAmounts = [1, 2, 5, 10, 20];
 
   @override
@@ -72,7 +74,7 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
                       ),
                     ),
                     Image.asset(
-                      'assets/car.png', // Add your car image here
+                      'assets/images/car.png', // Add your car image here
                       width: 80,
                       height: 60,
                       fit: BoxFit.cover,
@@ -82,153 +84,151 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Rating stars
+              // Chọn số sao
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (index) {
                   return IconButton(
-                    icon: Icon(
-                      index < rating ? Icons.star : Icons.star_border,
-                      size: 32,
-                      color: Colors.amber,
-                    ),
                     onPressed: () {
                       setState(() {
                         rating = index + 1;
                       });
                     },
+                    icon: Icon(
+                      index < rating ? Icons.star : Icons.star_border,
+                      color: Colors.amber,
+                      size: 32,
+                    ),
                   );
                 }),
               ),
               const SizedBox(height: 8),
               Text(
-                'Hoàn toàn hài lòng',
-                style: TextStyle(
-                  color: Colors.grey[200],
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                "Bạn đánh giá chuyến đi này như thế nào?",
+                style: TextStyle(color: Colors.grey[200], fontSize: 16),
               ),
               const SizedBox(height: 24),
 
-              // Review text field
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: TextField(
-                  controller: _reviewController,
-                  style: const TextStyle(color: Colors.white),
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    hintText: 'Để lại review',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    border: OutlineInputBorder(),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.amber),
-                    ),
+              // Viết đánh giá
+              TextField(
+                controller: _reviewController,
+                maxLines: 4,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Viết cảm nhận của bạn...",
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  filled: true,
+                  fillColor: Colors.grey[900],
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.amber),
                   ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Tip section
-              const Text(
-                'Tip cho bác tài',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-
-              // Tip amount buttons
+              // Chọn tip
+              const Text("Tip cho tài xế",
+                  style: TextStyle(color: Colors.white)),
+              const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ...tipAmounts.map((amount) => InkWell(
-                        onTap: () {
-                          setState(() {
-                            selectedTipAmount = amount;
-                          });
-                        },
-                        child: Container(
-                          width: 70,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: selectedTipAmount == amount
-                                ? Colors.amber
-                                : Colors.grey[900],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '\$$amount',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: selectedTipAmount == amount
-                                  ? Colors.black
-                                  : Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      )),
-                  InkWell(
-                    onTap: () {
-                      // Handle custom amount
-                    },
-                    child: Container(
-                      width: 70,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'Số khác',
-                        textAlign: TextAlign.center,
+                children: tipAmounts.map((amount) {
+                  return ChoiceChip(
+                    label: Text("\$$amount",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                            color: selectedTipAmount == amount
+                                ? Colors.black
+                                : Colors.white)),
+                    selected: selectedTipAmount == amount,
+                    selectedColor: Colors.amber,
+                    backgroundColor: Colors.grey[900],
+                    onSelected: (_) {
+                      setState(() {
+                        selectedTipAmount = amount;
+                      });
+                    },
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 32),
 
-              // Submit button
+              // Nút gửi đánh giá
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
+                  onPressed: () => submitRating(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                        borderRadius: BorderRadius.circular(8)),
                   ),
-                  onPressed: () {
-                    // Handle rating submission
-                  },
-                  child: const Text(
-                    'Đánh giá',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: const Text("Gửi đánh giá",
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold)),
                 ),
-              ),
+              )
             ],
           ),
         ),
       ),
     );
+  }
+
+  ////////////////////////////// FUNCTION ////////////////////////////////////////////////////////
+  void submitRating(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString("token") ?? "";
+    int customerId = int.tryParse(prefs.getString("customer_id") ?? "0") ?? 0;
+
+    print(customerId);
+    // TODO: Thay bằng dữ liệu thực tế
+    int driverId = 1;
+    int tripId = 1;
+
+    if (token.isEmpty || customerId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text("Thiếu thông tin đăng nhập. Vui lòng đăng nhập lại.")),
+      );
+      return;
+    }
+
+    final success = await _userController.rateDriver(
+      customerId: customerId,
+      driverId: driverId,
+      tripId: tripId,
+      rating: rating.toDouble(),
+      review: _reviewController.text,
+      token: token,
+    );
+
+    if (success) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Cảm ơn bạn"),
+          content: const Text("Bạn đã đánh giá tài xế thành công!"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Đóng"),
+            )
+          ],
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Gửi đánh giá thất bại, vui lòng thử lại.")),
+      );
+    }
   }
 
   @override
