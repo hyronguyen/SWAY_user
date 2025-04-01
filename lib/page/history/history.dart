@@ -20,19 +20,18 @@ class Trip {
   final String payment_method;
   final String endTime;
 
-  Trip({
-    required this.id,
-    required this.origin,
-    required this.destination,
-    required this.date,
-    required this.time,
-    required this.status,
-    required this.price,
-    required this.vehicleImage,
-    required this.serviceType,
-    required this.payment_method,
-    required this.endTime
-  });
+  Trip(
+      {required this.id,
+      required this.origin,
+      required this.destination,
+      required this.date,
+      required this.time,
+      required this.status,
+      required this.price,
+      required this.vehicleImage,
+      required this.serviceType,
+      required this.payment_method,
+      required this.endTime});
 
   factory Trip.fromJson(Map<String, dynamic> json) {
     return Trip(
@@ -40,14 +39,15 @@ class Trip {
       origin: json['PICKUP_POINT'],
       destination: json['DROPOFF_POINT'],
       date: json['START_TIME'],
-      time: json['START_TIME'],  // You may adjust this based on your needs
+      time: json['START_TIME'], // You may adjust this based on your needs
       status: json['STATUS'],
       price: json['TOTAL_FARE'].toString(),
-      vehicleImage: "assets/images/type_taxi.png", // You can adjust this to dynamically load images
-      serviceType: json['PROMOTION_CODE'],  // Assuming service type is related to promotion code
+      vehicleImage:
+          "assets/images/type_taxi.png", // You can adjust this to dynamically load images
+      serviceType: json['PROMOTION_CODE'] ??
+          '', // Assuming service type is related to promotion code
       payment_method: json['PAYMENT_METHOD'],
-      endTime: json['END_TIME'],
-
+      endTime: json['END_TIME'] ?? '',
     );
   }
 }
@@ -70,7 +70,8 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Future<void> _fetchCustomerIdAndTrips() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? customerIdString = prefs.getString('customer_id');  // Retrieve customer_id as String
+    String? customerIdString =
+        prefs.getString('customer_id'); // Retrieve customer_id as String
 
     if (customerIdString != null) {
       // Chuyển đổi customer_id từ String sang int
@@ -92,7 +93,7 @@ class _HistoryPageState extends State<HistoryPage> {
   Future<void> _fetchTrips(int customerId) async {
     // Lấy token từ SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');  // Lấy token từ SharedPreferences
+    String? token = prefs.getString('token'); // Lấy token từ SharedPreferences
 
     if (token == null) {
       print("No token found in SharedPreferences");
@@ -101,14 +102,15 @@ class _HistoryPageState extends State<HistoryPage> {
 
     // Tạo header cho yêu cầu HTTP
     Map<String, String> headers = {
-      'Authorization': '$token',  // Thêm token vào header dưới dạng Bearer token
-      'Content-Type': 'application/json'  // Đảm bảo kiểu nội dung là JSON
+      'Authorization': '$token', // Thêm token vào header dưới dạng Bearer token
+      'Content-Type': 'application/json' // Đảm bảo kiểu nội dung là JSON
     };
 
     // Gửi yêu cầu HTTP với token trong header
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/api/TripManagement/get-trip-history?customer_id=$customerId'),
-      headers: headers,  // Thêm headers vào yêu cầu
+      Uri.parse(
+          'http://10.0.2.2:8080/api/TripManagement/get-trip-history?customer_id=$customerId'),
+      headers: headers, // Thêm headers vào yêu cầu
     );
 
     if (response.statusCode == 200) {
@@ -129,7 +131,8 @@ class _HistoryPageState extends State<HistoryPage> {
   // Hàm chuyển đổi định dạng ngày
   String formatDate(String date) {
     DateTime parsedDate = DateTime.parse(date);
-    return DateFormat('d MMM yyyy').format(parsedDate); // Định dạng "23 th 2 2025"
+    return DateFormat('d MMM yyyy')
+        .format(parsedDate); // Định dạng "23 th 2 2025"
   }
 
   // Hàm chuyển đổi thời gian
@@ -167,7 +170,7 @@ class _HistoryPageState extends State<HistoryPage> {
         title: Text(
           "Lịch sử hoạt động",
           style: TextStyle(
-            color: Colors.white, 
+            color: Colors.white,
           ),
         ),
         backgroundColor: backgroundblack,
@@ -189,7 +192,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,  // Cuộn ngang
+                    scrollDirection: Axis.horizontal, // Cuộn ngang
                     child: Row(
                       children: [
                         FilterChip(
@@ -197,7 +200,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           selected: selectedService == "Tất cả",
                           selectedColor: Colors.amber,
                           labelStyle: TextStyle(
-                            color: selectedService == "Tất cả" ? Colors.black : Colors.white,
+                            color: selectedService == "Tất cả"
+                                ? Colors.black
+                                : Colors.white,
                           ),
                           onSelected: (bool selected) {
                             setState(() {
@@ -212,7 +217,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           selected: selectedService == "Di chuyển",
                           selectedColor: Colors.amber,
                           labelStyle: TextStyle(
-                            color: selectedService == "Di chuyển" ? Colors.black : Colors.white,
+                            color: selectedService == "Di chuyển"
+                                ? Colors.black
+                                : Colors.white,
                           ),
                           onSelected: (bool selected) {
                             setState(() {
@@ -227,7 +234,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           selected: selectedService == "Giao hàng",
                           selectedColor: Colors.amber,
                           labelStyle: TextStyle(
-                            color: selectedService == "Giao hàng" ? Colors.black : Colors.white,
+                            color: selectedService == "Giao hàng"
+                                ? Colors.black
+                                : Colors.white,
                           ),
                           onSelected: (bool selected) {
                             setState(() {
@@ -242,7 +251,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           selected: selectedService == "Đồ ăn",
                           selectedColor: Colors.amber,
                           labelStyle: TextStyle(
-                            color: selectedService == "Đồ ăn" ? Colors.black : Colors.white,
+                            color: selectedService == "Đồ ăn"
+                                ? Colors.black
+                                : Colors.white,
                           ),
                           onSelected: (bool selected) {
                             setState(() {
@@ -257,7 +268,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           selected: selectedService == "Quà tặng",
                           selectedColor: Colors.amber,
                           labelStyle: TextStyle(
-                            color: selectedService == "Quà tặng" ? Colors.black : Colors.white,
+                            color: selectedService == "Quà tặng"
+                                ? Colors.black
+                                : Colors.white,
                           ),
                           onSelected: (bool selected) {
                             setState(() {
@@ -276,13 +289,17 @@ class _HistoryPageState extends State<HistoryPage> {
                     itemCount: filteredTrips.length,
                     itemBuilder: (context, index) {
                       final trip = filteredTrips[index];
-                      Color statusColor = trip.status == "COMPLETED" // Đảm bảo so khớp với giá trị trả về từ API
+                      Color statusColor = trip.status ==
+                              "COMPLETED" // Đảm bảo so khớp với giá trị trả về từ API
                           ? Colors.green // Màu xanh cho Hoàn thành
-                          : (trip.status == "FAILED" // Kiểm tra trạng thái FAILED
+                          : (trip.status ==
+                                  "FAILED" // Kiểm tra trạng thái FAILED
                               ? Colors.red // Màu đỏ cho Hủy
-                              : (trip.status == "ONGOING" // Kiểm tra trạng thái ONGOING
+                              : (trip.status ==
+                                      "ONGOING" // Kiểm tra trạng thái ONGOING
                                   ? Colors.orange // Màu cam cho Trên đường
-                                  : Colors.grey)); // Màu mặc định nếu trạng thái không khớp
+                                  : Colors
+                                      .grey)); // Màu mặc định nếu trạng thái không khớp
 
                       return Column(
                         children: [
@@ -290,7 +307,7 @@ class _HistoryPageState extends State<HistoryPage> {
                             leading: ClipOval(
                               child: Image.asset(
                                 trip.vehicleImage,
-                                width: 30,  // Điều chỉnh kích thước hình ảnh
+                                width: 30, // Điều chỉnh kích thước hình ảnh
                                 height: 30,
                                 fit: BoxFit.cover,
                               ),
@@ -304,25 +321,29 @@ class _HistoryPageState extends State<HistoryPage> {
                               children: [
                                 Text(
                                   '${formatTime(trip.time)} - ${formatDate(trip.date)}',
-                                  style: TextStyle(fontSize: 14, color: Colors.white70),
+                                  style: TextStyle(
+                                      fontSize: 14, color: Colors.white70),
                                 ),
                                 SizedBox(height: 4),
                                 Text(
                                   formatStatus(trip.status),
-                                  style: TextStyle(fontSize: 14, color: statusColor),
+                                  style: TextStyle(
+                                      fontSize: 14, color: statusColor),
                                 ),
                               ],
                             ),
                             trailing: Text(
                               trip.price + ' đ',
-                              style: TextStyle(fontSize: 14, color: Colors.orangeAccent),
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.orangeAccent),
                             ),
                             onTap: () {
                               // Chuyển đến trang chi tiết cuốc xe
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => TripDetailPage(trip: trip),
+                                  builder: (context) =>
+                                      TripDetailPage(trip: trip),
                                 ),
                               );
                             },

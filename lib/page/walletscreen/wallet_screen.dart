@@ -46,9 +46,11 @@ class _WalletScreenState extends State<WalletScreen> {
           ],
         ),
         title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Tạo padding cho toàn bộ container
+          padding: const EdgeInsets.symmetric(
+              horizontal: 16, vertical: 8), // Tạo padding cho toàn bộ container
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5), // Nền màu đen với opacity để tạo hiệu ứng mờ
+            color: Colors.black
+                .withOpacity(0.5), // Nền màu đen với opacity để tạo hiệu ứng mờ
             borderRadius: BorderRadius.circular(12), // Bo góc cho container
           ),
           child: Column(
@@ -62,7 +64,8 @@ class _WalletScreenState extends State<WalletScreen> {
                     style: TextStyle(
                       fontSize: 16, // Kích thước chữ phù hợp
                       fontWeight: FontWeight.w500, // Tạo cảm giác dễ đọc
-                      color: Colors.white, // Màu chữ trắng để tương phản với nền đen mờ
+                      color: Colors
+                          .white, // Màu chữ trắng để tương phản với nền đen mờ
                     ),
                   ),
                   const Spacer(), // Tách icon khỏi text "Tổng số dư"
@@ -75,7 +78,8 @@ class _WalletScreenState extends State<WalletScreen> {
                     ),
                     onPressed: () {
                       setState(() {
-                        _isAmountVisible = !_isAmountVisible; // Đổi trạng thái hiển thị
+                        _isAmountVisible =
+                            !_isAmountVisible; // Đổi trạng thái hiển thị
                       });
                     },
                   ),
@@ -117,13 +121,11 @@ class _WalletScreenState extends State<WalletScreen> {
               const SizedBox(height: 8),
             ],
           ),
-          
         ),
-        
+
         toolbarHeight: 180, // Điều chỉnh chiều cao của AppBar
         elevation: 0,
       ),
-  
       backgroundColor: const Color(0xFF121212),
       body: SingleChildScrollView(
         child: Column(
@@ -139,14 +141,17 @@ class _WalletScreenState extends State<WalletScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AddFundsScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => AddFundsScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEDAE10), // Màu vàng cho Nạp tiền
+                      backgroundColor:
+                          const Color(0xFFEDAE10), // Màu vàng cho Nạp tiền
                       foregroundColor: Colors.black,
                       side: const BorderSide(color: Color(0xFFEDAE10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -166,10 +171,12 @@ class _WalletScreenState extends State<WalletScreen> {
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent, // Màu xanh dương cho Rút tiền
+                      backgroundColor:
+                          Colors.orangeAccent, // Màu xanh dương cho Rút tiền
                       foregroundColor: Colors.white,
                       side: const BorderSide(color: Colors.orangeAccent),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -217,34 +224,35 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
             const SizedBox(height: 16),
             const TransactionItem(
-              icon: Icon(Icons.arrow_circle_left_outlined, size: 40, color: Colors.red),  // Withdrawal icon (Rút tiền)
+              icon: Icon(Icons.arrow_circle_left_outlined,
+                  size: 40, color: Colors.red), // Withdrawal icon (Rút tiền)
               name: 'Nguyễn Minh Kha',
               time: '09:20 - 20/03/2025',
               amount: '-\đ 150000',
-              isBold: true,  // Bold background
+              isBold: true, // Bold background
             ),
-
             const TransactionItem(
-              icon: Icon(Icons.arrow_circle_right_outlined, size: 40, color: Colors.green),  // Deposit icon (Nạp tiền)
+              icon: Icon(Icons.arrow_circle_right_outlined,
+                  size: 40, color: Colors.green), // Deposit icon (Nạp tiền)
               name: 'Nạp tiền',
               time: '09:20 - 20/03/2025',
               amount: '\đ 160000',
-              isBold: false,  // Light background
+              isBold: false, // Light background
             ),
             const TransactionItem(
-              icon: Icon(Icons.arrow_circle_left_outlined, size: 40, color: Colors.red),  // Withdrawal icon (Rút tiền)
+              icon: Icon(Icons.arrow_circle_left_outlined,
+                  size: 40, color: Colors.red), // Withdrawal icon (Rút tiền)
               name: 'Lê Hữu Dũng',
               time: '09:20 - 20/03/2025',
               amount: '-\đ 100000',
-              isBold: true,  // Bold background
-            ),           
+              isBold: true, // Bold background
+            ),
           ],
         ),
       ),
     );
   }
 }
-
 
 class BalanceCard extends StatelessWidget {
   final String amount;
@@ -294,11 +302,11 @@ class BalanceCard extends StatelessWidget {
 }
 
 class TransactionItem extends StatelessWidget {
-  final Icon icon;  // Using an Icon type
+  final Icon icon; // Using an Icon type
   final String name;
   final String time;
   final String amount;
-  final bool isBold;  // Parameter to alternate the background color
+  final bool isBold; // Parameter to alternate the background color
 
   const TransactionItem({
     super.key,
@@ -306,16 +314,20 @@ class TransactionItem extends StatelessWidget {
     required this.name,
     required this.time,
     required this.amount,
-    required this.isBold,  // Make sure to pass this flag when calling the widget
+    required this.isBold, // Make sure to pass this flag when calling the widget
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16), // Tăng padding để giao diện thoải mái hơn
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Tạo khoảng cách giữa các item
+      padding:
+          const EdgeInsets.all(16), // Tăng padding để giao diện thoải mái hơn
+      margin: const EdgeInsets.symmetric(
+          horizontal: 16, vertical: 8), // Tạo khoảng cách giữa các item
       decoration: BoxDecoration(
-        color: isBold ? const Color(0xFF2A2A2A) : const Color(0xFF1F1F1F), // Alternate background colors
+        color: isBold
+            ? const Color(0xFF2A2A2A)
+            : const Color(0xFF1F1F1F), // Alternate background colors
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -326,7 +338,7 @@ class TransactionItem extends StatelessWidget {
       ),
       child: Row(
         children: [
-          icon,  // Display the passed icon
+          icon, // Display the passed icon
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -335,7 +347,9 @@ class TransactionItem extends StatelessWidget {
                 Text(
                   name,
                   style: TextStyle(
-                    color: isBold ? Colors.white : Colors.grey[400], // Alternate text color
+                    color: isBold
+                        ? Colors.white
+                        : Colors.grey[400], // Alternate text color
                     fontSize: 16, // Kích thước chữ vừa phải
                     fontWeight: FontWeight.w600, // Đậm cho ô đậm
                     fontFamily: 'Poppins',
@@ -358,7 +372,10 @@ class TransactionItem extends StatelessWidget {
           Text(
             amount,
             style: TextStyle(
-              color: amount.startsWith('-') ? Colors.red : Colors.green, // Màu sắc số tiền tùy thuộc vào loại giao dịch
+              color: amount.startsWith('-')
+                  ? Colors.red
+                  : Colors
+                      .green, // Màu sắc số tiền tùy thuộc vào loại giao dịch
               fontSize: 16, // Kích thước chữ vừa phải cho số tiền
               fontWeight: FontWeight.w600, // Đậm để nổi bật
               fontFamily: 'Poppins',

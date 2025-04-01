@@ -40,7 +40,7 @@ class _CallingScreenState extends State<CallingScreen> {
                 ],
               ),
             ),
-            
+
             // Caller information
             Expanded(
               child: Column(
@@ -53,13 +53,14 @@ class _CallingScreenState extends State<CallingScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(50),
                       image: const DecorationImage(
-                        image: AssetImage('assets/profile.jpg'), // Add your image here
+                        image: AssetImage(
+                            'assets/profile.jpg'), // Add your image here
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Caller name
                   Text(
                     callerName,
@@ -70,7 +71,7 @@ class _CallingScreenState extends State<CallingScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Call duration
                   Text(
                     callingTime,
@@ -82,7 +83,7 @@ class _CallingScreenState extends State<CallingScreen> {
                 ],
               ),
             ),
-            
+
             // Call controls
             Padding(
               padding: const EdgeInsets.only(bottom: 48.0),

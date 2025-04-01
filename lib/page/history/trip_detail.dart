@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sway/config/colors.dart';
+import 'package:sway/page/booking/driver_rate.dart';
 import 'history.dart'; // Đảm bảo bạn import đúng trang history
 import 'package:intl/intl.dart';
 
@@ -10,7 +11,8 @@ class TripDetailPage extends StatelessWidget {
   // Hàm chuyển đổi định dạng ngày
   String formatDate(String date) {
     DateTime parsedDate = DateTime.parse(date);
-    return DateFormat('d MMM yyyy').format(parsedDate); // Định dạng "23 th 2 2025"
+    return DateFormat('d MMM yyyy')
+        .format(parsedDate); // Định dạng "23 th 2 2025"
   }
 
   String formatTime(String time) {
@@ -18,8 +20,8 @@ class TripDetailPage extends StatelessWidget {
     return DateFormat('hh:mm a').format(parsedTime); // Định dạng "02:30 PM"
   }
 
-    String formatPaymentMethod(String payment_method){
-    switch (payment_method){
+  String formatPaymentMethod(String payment_method) {
+    switch (payment_method) {
       case 'CASH':
         return 'Tiền mặt';
       case 'CREDIT_CARD':
@@ -30,6 +32,7 @@ class TripDetailPage extends StatelessWidget {
         return 'Chưa xác định';
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +78,29 @@ class TripDetailPage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DriverRatingScreen(
+                      tripId: trip.id.toString(), 
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+              ),
+              child: const Text(
+                "Đánh giá tài xế",
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 20),
+
 
             // Phương thức thanh toán
             Container(
@@ -87,7 +112,8 @@ class TripDetailPage extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.attach_money, color: Colors.white),
+                    leading:
+                        const Icon(Icons.attach_money, color: Colors.white),
                     title: Text(
                       formatPaymentMethod(trip.payment_method),
                       style: const TextStyle(color: Colors.white),
@@ -120,7 +146,8 @@ class TripDetailPage extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.radio_button_checked, color: Colors.blue),
+                    leading: const Icon(Icons.radio_button_checked,
+                        color: Colors.blue),
                     title: Text(
                       trip.origin,
                       style: const TextStyle(color: Colors.white),
@@ -138,7 +165,9 @@ class TripDetailPage extends StatelessWidget {
                       style: const TextStyle(color: Colors.white),
                     ),
                     subtitle: Text(
-                      formatTime(trip.endTime),
+                      trip.endTime != null && trip.endTime.isNotEmpty
+                          ? formatTime(trip.endTime)
+                          : '', // Kiểm tra endTime trước khi hiển thị
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ),

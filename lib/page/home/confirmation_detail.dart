@@ -30,13 +30,10 @@ class TripConfirmationDetail extends StatefulWidget {
 }
 
 class _TripConfirmationDetailState extends State<TripConfirmationDetail> {
-   
-
 // INIT & DISPOSE //////////////////////////////////////////////////////////////////////////////
   @override
   void initState() {
     super.initState();
-  
   }
 
   @override
@@ -46,14 +43,11 @@ class _TripConfirmationDetailState extends State<TripConfirmationDetail> {
 
 // Function //////////////////////////////////////////////////////////////////////////////
 
-
-  
 // LAYOUT ////////////////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
-    
-    String formattedFare =
-        NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ').format(widget.fare);
+    String formattedFare = NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ')
+        .format(widget.fare);
 
     return Scaffold(
       appBar: AppBar(title: Text('Xác nhận chuyến đi')),
@@ -70,9 +64,9 @@ class _TripConfirmationDetailState extends State<TripConfirmationDetail> {
             ),
             SizedBox(height: 20),
 
-            _buildRouteCard(widget.pickupAddress, widget.destinationAddress, widget.distance),
+            _buildRouteCard(widget.pickupAddress, widget.destinationAddress,
+                widget.distance),
             SizedBox(height: 20),
-
 
             // Nút Quay lại TripConfirmation
             FractionallySizedBox(
@@ -80,10 +74,10 @@ class _TripConfirmationDetailState extends State<TripConfirmationDetail> {
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: Icon(Icons.arrow_back),
-                label: Text('Quay lại'),  
+                label: Text('Quay lại'),
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  textStyle: TextStyle(fontSize: 16,color: backgroundblack),
+                  textStyle: TextStyle(fontSize: 16, color: backgroundblack),
                   backgroundColor: primary,
                 ),
               ),
@@ -95,7 +89,7 @@ class _TripConfirmationDetailState extends State<TripConfirmationDetail> {
   }
 
 // BUID WIDGETS ////////////////////////////////////////////////////////////////////////////////
- 
+
   // Widget gộp cả điểm đón và điểm đến vào một card
   Widget _buildRouteCard(String pickup, String destination, double km) {
     return Card(
@@ -170,7 +164,7 @@ class _TripConfirmationDetailState extends State<TripConfirmationDetail> {
               ),
 
             SizedBox(height: 8), // Thêm khoảng cách giữa 2 dòng
-            
+
             Row(
               children: [
                 Icon(Icons.attach_money, color: Colors.green),
@@ -190,5 +184,4 @@ class _TripConfirmationDetailState extends State<TripConfirmationDetail> {
       ),
     );
   }
-
 }

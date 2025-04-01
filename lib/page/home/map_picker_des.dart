@@ -157,10 +157,8 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
         automaticallyImplyLeading: true,
         backgroundColor: primary,
       ),
-
       body: Stack(
         children: [
-
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
@@ -169,7 +167,6 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               ),
               onMapEvent: (event) {
-
                 // Xử ly sự kiện di chuyển bản đồ
                 setState(() => _isMoving = true);
                 _debounce?.cancel();
@@ -190,9 +187,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
           ),
 
           // PIN CHỌN VỊ TRÍ
-          Center(
-            child: _isMoving ? pinoff_icon : pin_icon
-          ),
+          Center(child: _isMoving ? pinoff_icon : pin_icon),
 
           // Ô THÔNG TIN ĐỊNH VỊ VÀ NÚT XÁC NHẬN
           Positioned(
@@ -207,8 +202,7 @@ class _MapPickerDestinationState extends State<MapPickerDestination> {
               ),
               child: Column(
                 children: [
-
-                  // Ô THÔNG TIN ĐỊNH VỊ 
+                  // Ô THÔNG TIN ĐỊNH VỊ
                   TextField(
                     readOnly: true,
                     controller: _addressController,

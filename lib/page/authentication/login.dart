@@ -7,9 +7,11 @@ import 'package:http/http.dart' as http; // Import HTTP for API calls
 
 class LoginScreen extends StatelessWidget {
   ////////////////////////////// BIẾN WIDGETS  ////////////////////////////////////////////////////////
-  final TextEditingController emailController = TextEditingController(); // Changed to emailController
+  final TextEditingController emailController =
+      TextEditingController(); // Changed to emailController
   final TextEditingController passwordController = TextEditingController();
-  final UserController userController = UserController(); // Khởi tạo Usercontroller
+  final UserController userController =
+      UserController(); // Khởi tạo Usercontroller
 
   LoginScreen({super.key});
 
@@ -31,7 +33,8 @@ class LoginScreen extends StatelessWidget {
               // Field email
               TextField(
                 controller: emailController,
-                keyboardType: TextInputType.emailAddress, // Update for email input
+                keyboardType:
+                    TextInputType.emailAddress, // Update for email input
                 decoration: const InputDecoration(
                   labelText: "Email", // Changed label to "Email"
                   labelStyle: TextStyle(color: Colors.white),
@@ -72,14 +75,17 @@ class LoginScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => MakeLogin(context),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 12),
                     backgroundColor: Color(0xFFedae10), // Đổi màu nền nút
                     foregroundColor: Colors.white, // Đổi màu chữ trên nút
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), // Bo tròn viền nút
+                      borderRadius:
+                          BorderRadius.circular(12), // Bo tròn viền nút
                     ),
                   ),
-                  child: const Text("Đăng nhập", style: TextStyle(fontSize: 16)),
+                  child:
+                      const Text("Đăng nhập", style: TextStyle(fontSize: 16)),
                 ),
               ),
 
@@ -91,10 +97,14 @@ class LoginScreen extends StatelessWidget {
                     child: Divider(color: Colors.white, thickness: 1),
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10), // Khoảng cách giữa Divider và chữ "or"
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 10), // Khoảng cách giữa Divider và chữ "or"
                     child: Text(
                       "or",
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                   Expanded(
@@ -111,14 +121,16 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 1), // Viền trắng
+                      border: Border.all(
+                          color: Colors.grey, width: 1), // Viền trắng
                       borderRadius: BorderRadius.circular(8), // Góc bo tròn nhẹ
                     ),
                     child: IconButton(
                       onPressed: () {
                         debugPrint("Đăng nhập với Facebook");
                       },
-                      icon: const Icon(Icons.facebook, color: Colors.blue, size: 40),
+                      icon: const Icon(Icons.facebook,
+                          color: Colors.blue, size: 40),
                     ),
                   ),
                   Container(
@@ -130,7 +142,8 @@ class LoginScreen extends StatelessWidget {
                       onPressed: () {
                         debugPrint("Đăng nhập với Apple");
                       },
-                      icon: const Icon(Icons.apple, color: Colors.white, size: 40),
+                      icon: const Icon(Icons.apple,
+                          color: Colors.white, size: 40),
                     ),
                   ),
                   Container(
@@ -142,7 +155,8 @@ class LoginScreen extends StatelessWidget {
                       onPressed: () {
                         debugPrint("Đăng nhập với Google");
                       },
-                      icon: const Icon(Icons.g_mobiledata, color: Colors.red, size: 40),
+                      icon: const Icon(Icons.g_mobiledata,
+                          color: Colors.red, size: 40),
                     ),
                   ),
                 ],
@@ -156,13 +170,16 @@ class LoginScreen extends StatelessWidget {
                     context,
                     PageRouteBuilder(
                       transitionDuration: const Duration(milliseconds: 600),
-                      pageBuilder: (context, animation, secondaryAnimation) => SignupScreen(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          SignupScreen(),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
                         const begin = Offset(1.0, 0.0); // Đi từ bên phải vào
                         const end = Offset.zero;
                         const curve = Curves.easeInOut;
 
-                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                        var tween = Tween(begin: begin, end: end)
+                            .chain(CurveTween(curve: curve));
 
                         return SlideTransition(
                           position: animation.drive(tween),
@@ -177,11 +194,15 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: "Chưa có tài khoản? ",
-                        style: TextStyle(color: Colors.white), // Màu trắng cho phần đầu
+                        style: TextStyle(
+                            color: Colors.white), // Màu trắng cho phần đầu
                       ),
                       TextSpan(
                         text: "Đăng ký ở đây",
-                        style: TextStyle(color: Color(0xFFedae10), fontWeight: FontWeight.bold), // Màu vàng cho phần sau
+                        style: TextStyle(
+                            color: Color(0xFFedae10),
+                            fontWeight:
+                                FontWeight.bold), // Màu vàng cho phần sau
                       ),
                     ],
                   ),
@@ -194,8 +215,8 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-    ////////////////////////////// FUNCTION  ////////////////////////////////////////////////////////
-    void MakeLogin(BuildContext context) async {
+  ////////////////////////////// FUNCTION  ////////////////////////////////////////////////////////
+  void MakeLogin(BuildContext context) async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
@@ -207,7 +228,8 @@ class LoginScreen extends StatelessWidget {
     }
 
     // Gửi yêu cầu đăng nhập với email và mật khẩu
-    Map<String, dynamic>? responseData = await userController.login(email, password); // Lấy dữ liệu trả về
+    Map<String, dynamic>? responseData =
+        await userController.login(email, password); // Lấy dữ liệu trả về
 
     if (!context.mounted) return;
 
@@ -217,12 +239,13 @@ class LoginScreen extends StatelessWidget {
         responseData.containsKey('customer')) {
       // Lấy token và customer_id từ responseData
       String token = responseData['token']; // Lấy token
-      String customerId = responseData['customer']['CUSTOMER_ID'].toString(); // Lấy CUSTOMER_ID từ customer
+      String customerId = responseData['customer']['CUSTOMER_ID']
+          .toString(); // Lấy CUSTOMER_ID từ customer
 
       // Lưu token và customer_id vào SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString("token", token);  // Lưu token
-      await prefs.setString("customer_id", customerId);  // Lưu customer_id
+      await prefs.setString("token", token); // Lưu token
+      await prefs.setString("customer_id", customerId); // Lưu customer_id
 
       // Chuyển đến trang chính
       Navigator.push(
@@ -235,7 +258,8 @@ class LoginScreen extends StatelessWidget {
             const end = Offset.zero;
             const curve = Curves.easeInOut;
 
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
             return SlideTransition(
               position: animation.drive(tween),

@@ -54,10 +54,14 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            _buildWarningItem('Mọi dữ liệu cá nhân của bạn sẽ bị xóa khỏi hệ thống.'),
-            _buildWarningItem('Bạn vẫn có thể đăng ký lại bằng cùng một email.'),
-            _buildWarningItem('Tất cả lịch sử chuyến đi và giao dịch sẽ bị mất.'),
-            _buildWarningItem('Quyền lợi và khuyến mãi trong tài khoản sẽ không được bảo lưu.'),
+            _buildWarningItem(
+                'Mọi dữ liệu cá nhân của bạn sẽ bị xóa khỏi hệ thống.'),
+            _buildWarningItem(
+                'Bạn vẫn có thể đăng ký lại bằng cùng một email.'),
+            _buildWarningItem(
+                'Tất cả lịch sử chuyến đi và giao dịch sẽ bị mất.'),
+            _buildWarningItem(
+                'Quyền lợi và khuyến mãi trong tài khoản sẽ không được bảo lưu.'),
             const SizedBox(height: 20),
             const Text(
               'Lý do bạn muốn xóa tài khoản (không bắt buộc):',

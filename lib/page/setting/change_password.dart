@@ -17,7 +17,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
- String? _customerId;
+  String? _customerId;
 
   final UserController _userController = UserController();
 
@@ -27,15 +27,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     _loadCustomerId();
   }
 
- Future<void> _loadCustomerId() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  
-  setState(() {
-    _customerId = prefs.getString("customer_id"); // Đọc đúng kiểu String
-  });
+  Future<void> _loadCustomerId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  print("DEBUG: customer_id = $_customerId"); // Kiểm tra giá trị
-}
+    setState(() {
+      _customerId = prefs.getString("customer_id"); // Đọc đúng kiểu String
+    });
+
+    print("DEBUG: customer_id = $_customerId"); // Kiểm tra giá trị
+  }
 
   void _onChangePasswordPressed() {
     if (_customerId == null) {
@@ -71,8 +71,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
-print("DEBUG: customer_id = $_customerId"); // Kiểm tra giá trị ID
-  print("DEBUG: token = $token"); // Kiểm tra token có null không
+    print("DEBUG: customer_id = $_customerId"); // Kiểm tra giá trị ID
+    print("DEBUG: token = $token"); // Kiểm tra token có null không
     if (token == null) {
       _showSnackbar("Bạn chưa đăng nhập!", Colors.red);
       setState(() {
@@ -83,17 +83,16 @@ print("DEBUG: customer_id = $_customerId"); // Kiểm tra giá trị ID
 
     print("DEBUG: customer_id = $_customerId"); // Kiểm tra giá trị
 
-   final response = await _userController.apiChangePassword(
-  _customerId ?? "", // Giữ nguyên String
-  _oldPasswordController.text,
-  _newPasswordController.text,
-  _confirmPasswordController.text,
-  token,
-);
+    final response = await _userController.apiChangePassword(
+      _customerId ?? "", // Giữ nguyên String
+      _oldPasswordController.text,
+      _newPasswordController.text,
+      _confirmPasswordController.text,
+      token,
+    );
 
-
-
-    _showSnackbar(response["message"], response["status"] == "success" ? Colors.green : Colors.red);
+    _showSnackbar(response["message"],
+        response["status"] == "success" ? Colors.green : Colors.red);
 
     if (response["status"] == "success") {
       Navigator.pop(context);

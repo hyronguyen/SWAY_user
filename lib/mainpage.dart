@@ -11,7 +11,6 @@ import 'package:sway/page/walletscreen/wallet_screen.dart';
 import 'page/defaultwidget.dart';
 import 'dart:convert';
 
-
 class Mainpage extends StatefulWidget {
   const Mainpage({super.key});
 
@@ -20,8 +19,8 @@ class Mainpage extends StatefulWidget {
 }
 
 class _MainpageState extends State<Mainpage> {
-  String fullname = ''; 
-  String email = ''; 
+  String fullname = '';
+  String email = '';
   final MainMenu mainMenu = MainMenu();
   final MapPicker mappicker = MapPicker();
   final WalletScreen walletScreen = WalletScreen();
@@ -37,13 +36,13 @@ class _MainpageState extends State<Mainpage> {
     });
   }
 
-   @override
+  @override
   void initState() {
     super.initState();
     _loadCustomerData();
   }
 
-    Future<void> _loadCustomerData() async {
+  Future<void> _loadCustomerData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? customerJson = prefs.getString('customer_data');
 
@@ -53,9 +52,7 @@ class _MainpageState extends State<Mainpage> {
       setState(() {
         fullname = customerData['FULLNAME'];
         email = customerData['EMAIL'];
-
       });
-
     } else {
       print("Không tìm thấy thông tin khách hàng trong SharedPreferences.");
     }
@@ -176,10 +173,8 @@ class _MainpageState extends State<Mainpage> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    Text(fullname,
-                        style: TextStyle(color: backgroundblack)),
-                    Text(email,
-                        style: TextStyle(color: greymenu)),
+                    Text(fullname, style: TextStyle(color: backgroundblack)),
+                    Text(email, style: TextStyle(color: greymenu)),
                   ],
                 ),
               ),
@@ -323,53 +318,55 @@ class _MainpageState extends State<Mainpage> {
                 ),
               ),
             ),
-        floatingActionButtonLocation: _selectedIndex == -1
+      floatingActionButtonLocation: _selectedIndex == -1
           ? null // Ẩn floatingActionButtonLocation khi ở màn hình Lịch sử
-          : FloatingActionButtonLocation.centerDocked, // Chỉ hiển thị vị trí FAB khi không ở màn hình lịch sử
+          : FloatingActionButtonLocation
+              .centerDocked, // Chỉ hiển thị vị trí FAB khi không ở màn hình lịch sử
 
       bottomNavigationBar: _selectedIndex == -1
-        ? null // Không hiển thị Bottom Navigation Bar khi ở màn hình Lịch sử
-        : Theme(
-            data: ThemeData(
-              canvasColor: Colors.black,
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
+          ? null // Không hiển thị Bottom Navigation Bar khi ở màn hình Lịch sử
+          : Theme(
+              data: ThemeData(
+                canvasColor: Colors.black,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: BottomNavigationBar(
+                items: const <BottomNavigationBarItem>[
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home),
+                    label: "Trang chủ",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.favorite),
+                    label: "Yêu thích",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: SizedBox.shrink(), // Ẩn biểu tượng ở vị trí giữa
+                    label: "",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.chat_bubble),
+                    label: "Tin nhắn",
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    label: "Hồ sơ",
+                  ),
+                ],
+                currentIndex: _selectedIndex == -1 ? 0 : _selectedIndex,
+                selectedItemColor: Colors.amber[400],
+                unselectedItemColor: Colors.grey,
+                onTap: _onItemTapped,
+                showUnselectedLabels: true,
+                type: BottomNavigationBarType.fixed,
+                elevation: 0,
+              ),
             ),
-            child: BottomNavigationBar(
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: "Trang chủ",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.favorite),
-                  label: "Yêu thích",
-                ),
-                BottomNavigationBarItem(
-                  icon: SizedBox.shrink(), // Ẩn biểu tượng ở vị trí giữa
-                  label: "",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.chat_bubble),
-                  label: "Tin nhắn",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person),
-                  label: "Hồ sơ",
-                ),
-              ],
-              currentIndex: _selectedIndex == -1 ? 0 : _selectedIndex,
-              selectedItemColor: Colors.amber[400],
-              unselectedItemColor: Colors.grey,
-              onTap: _onItemTapped,
-              showUnselectedLabels: true,
-              type: BottomNavigationBarType.fixed,
-              elevation: 0,
-            ),
-          ),
-       body: _selectedIndex == -1
-        ? historyScreen  // Nếu _selectedIndex là -1, hiển thị màn hình "Lịch sử"
-        : _loadWidget(_selectedIndex),  // Nếu không, hiển thị các widget tương ứng với chỉ số hợp lệ
+      body: _selectedIndex == -1
+          ? historyScreen // Nếu _selectedIndex là -1, hiển thị màn hình "Lịch sử"
+          : _loadWidget(
+              _selectedIndex), // Nếu không, hiển thị các widget tương ứng với chỉ số hợp lệ
     );
   }
 }
@@ -383,10 +380,10 @@ class HexagonClipper extends CustomClipper<Path> {
 
     path.moveTo(w * 0.5, 0);
     path.lineTo(w, h * 0.25);
-    path.lineTo(w, h * 0.75); 
-    path.lineTo(w * 0.5, h); 
-    path.lineTo(0, h * 0.75); 
-    path.lineTo(0, h * 0.25); 
+    path.lineTo(w, h * 0.75);
+    path.lineTo(w * 0.5, h);
+    path.lineTo(0, h * 0.75);
+    path.lineTo(0, h * 0.25);
     path.close();
 
     return path;

@@ -4,7 +4,7 @@ class User {
   String? phone;
   String? password;
   String? gender;
-  String? birthday;  // Đổi thành String thay vì DateTime
+  String? birthday; // Đổi thành String thay vì DateTime
   String? avarta;
 
   User({

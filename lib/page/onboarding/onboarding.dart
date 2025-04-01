@@ -20,12 +20,14 @@ class _OnboardingStartState extends State<OnboardingStart> {
     {
       "image": "ob_2.png",
       "title": "ĐI BẤT CỨ LÚC NÀO",
-      "description": "Với các chuyến xe liên tục 24/7, đáp ứng mọi nhu cầu đi lại của mọi người",
+      "description":
+          "Với các chuyến xe liên tục 24/7, đáp ứng mọi nhu cầu đi lại của mọi người",
     },
     {
       "image": "ob_3.png",
       "title": "BẮT TÀI NÀO!",
-      "description": "Chúc bạn có trải nghiệm thật hài lòng với dịch vụ của chúng tôi",
+      "description":
+          "Chúc bạn có trải nghiệm thật hài lòng với dịch vụ của chúng tôi",
     },
   ];
 
