@@ -29,7 +29,8 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
   TextEditingController confirmPasswordController = TextEditingController();
   bool isLoading = false;
   bool obscureText = true;
-  final UserController userController = UserController(); // Khởi tạo Usercontroller
+  final UserController userController =
+      UserController(); // Khởi tạo Usercontroller
 
   // Hàm đăng ký người dùng
   Future<void> SignUp() async {
@@ -39,7 +40,8 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
     // Kiểm tra nếu mật khẩu và xác nhận mật khẩu không trùng khớp
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Mật khẩu và xác nhận mật khẩu không khớp")),
+        const SnackBar(
+            content: Text("Mật khẩu và xác nhận mật khẩu không khớp")),
       );
       return;
     }
@@ -77,7 +79,9 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => SignupEmailVerifyScreen(email: widget.email)), // Chuyển hướng về trang đăng nhập
+          MaterialPageRoute(
+              builder: (context) => SignupEmailVerifyScreen(
+                  email: widget.email)), // Chuyển hướng về trang đăng nhập
         );
       } else {
         // Nếu có lỗi khi đăng ký
@@ -99,13 +103,15 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
   // Hàm kiểm tra email
   bool isValidEmail(String email) {
-    final RegExp regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    final RegExp regex =
+        RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     return regex.hasMatch(email);
   }
 
   // Hàm kiểm tra số điện thoại
   bool isValidPhone(String phone) {
-    final RegExp regex = RegExp(r'^\d{10,11}$'); // Kiểm tra số điện thoại có 10-11 chữ số
+    final RegExp regex =
+        RegExp(r'^\d{10,11}$'); // Kiểm tra số điện thoại có 10-11 chữ số
     return regex.hasMatch(phone);
   }
 
@@ -138,7 +144,8 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                 labelStyle: const TextStyle(color: Colors.white),
                 border: const OutlineInputBorder(), // Viền mặc định
                 focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white, width: 2.0), // Viền xanh khi focus
+                  borderSide: BorderSide(
+                      color: Colors.white, width: 2.0), // Viền xanh khi focus
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -164,7 +171,8 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                 labelStyle: TextStyle(color: Colors.white),
                 border: OutlineInputBorder(), // Viền mặc định
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white, width: 2.0), // Viền xanh khi focus
+                  borderSide: BorderSide(
+                      color: Colors.white, width: 2.0), // Viền xanh khi focus
                 ),
               ),
             ),
@@ -174,7 +182,8 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
             // Gợi ý tạo mật khẩu mạnh
             const Text(
               "⚡ Gợi ý tạo mật khẩu mạnh:",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFedae10)),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Color(0xFFedae10)),
             ),
             const SizedBox(height: 5),
             const Text(
@@ -191,14 +200,18 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                   : ElevatedButton(
                       onPressed: SignUp,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                        backgroundColor: const Color(0xFFedae10), // Đổi màu nền nút
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 12),
+                        backgroundColor:
+                            const Color(0xFFedae10), // Đổi màu nền nút
                         foregroundColor: Colors.white, // Đổi màu chữ trên nút
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12), // Bo tròn viền nút
+                          borderRadius:
+                              BorderRadius.circular(12), // Bo tròn viền nút
                         ),
                       ),
-                      child: const Text("Xác nhận", style: TextStyle(fontSize: 16)),
+                      child: const Text("Xác nhận",
+                          style: TextStyle(fontSize: 16)),
                     ),
             ),
           ],

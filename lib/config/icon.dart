@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 Image point_icon = Image.asset("assets/icon/point.png");
@@ -15,8 +14,8 @@ Image man_icon = Image.asset("assets/icon/man.png");
 
 Image xemay_icon = Image.asset("assets/icon/xemay.png");
 
-Image tietkiem_icon =  Image.asset("assets/icon/tietkiem.png");
+Image tietkiem_icon = Image.asset("assets/icon/tietkiem.png");
 
-Image boncho_icon =  Image.asset("assets/icon/boncho.png");
+Image boncho_icon = Image.asset("assets/icon/boncho.png");
 
 Image luxury_icon = Image.asset("assets/icon/luxury.png");

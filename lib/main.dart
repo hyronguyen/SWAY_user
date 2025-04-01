@@ -24,6 +24,6 @@ class MyApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: backgroundblack,
         ),
-        home: DriverRatingScreen());
+        home: Mainpage());
   }
 }

@@ -24,12 +24,36 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> settingsItems = [
-      {'title': 'Đổi mật khẩu', 'icon': Icons.lock, 'page': const ChangePasswordScreen()},
-      {'title': 'Ngôn ngữ ứng dụng', 'icon': Icons.language, 'page': const LanguageScreen()},
-      {'title': 'Điều khoản', 'icon': Icons.article, 'page': const TermsScreen()},
-      {'title': 'Thông tin người dùng', 'icon': Icons.person, 'page': const CustomerProfileScreen()},
-      {'title': 'Contact Us', 'icon': Icons.contact_support, 'page': const ContactScreen()},
-      {'title': 'Xóa tài khoản', 'icon': Icons.delete_forever, 'page': const DeleteAccountScreen()},
+      {
+        'title': 'Đổi mật khẩu',
+        'icon': Icons.lock,
+        'page': const ChangePasswordScreen()
+      },
+      {
+        'title': 'Ngôn ngữ ứng dụng',
+        'icon': Icons.language,
+        'page': const LanguageScreen()
+      },
+      {
+        'title': 'Điều khoản',
+        'icon': Icons.article,
+        'page': const TermsScreen()
+      },
+      {
+        'title': 'Thông tin người dùng',
+        'icon': Icons.person,
+        'page': const CustomerProfileScreen()
+      },
+      {
+        'title': 'Contact Us',
+        'icon': Icons.contact_support,
+        'page': const ContactScreen()
+      },
+      {
+        'title': 'Xóa tài khoản',
+        'icon': Icons.delete_forever,
+        'page': const DeleteAccountScreen()
+      },
     ];
 
     return Scaffold(
@@ -50,7 +74,8 @@ class SettingsScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => settingsItems[index]['page']),
+                  MaterialPageRoute(
+                      builder: (context) => settingsItems[index]['page']),
                 );
               },
             );
@@ -89,7 +114,8 @@ class SettingsScreen extends StatelessWidget {
         leading: Icon(icon, color: color, size: 24),
         title: Text(
           title,
-          style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: color, fontSize: 16, fontWeight: FontWeight.bold),
         ),
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: onTap,

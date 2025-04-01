@@ -3,7 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../controller/user_controller.dart'; // đường dẫn phù hợp với project bạn
 
 class DriverRatingScreen extends StatefulWidget {
-  const DriverRatingScreen({super.key});
+  final String tripId; // Thêm tripId vào constructor
+
+  const DriverRatingScreen({super.key, required this.tripId}); // Nhận tripId trong constructor
 
   @override
   State<DriverRatingScreen> createState() => _DriverRatingScreenState();
@@ -180,16 +182,14 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
     );
   }
 
-  ////////////////////////////// FUNCTION ////////////////////////////////////////////////////////
   void submitRating(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString("token") ?? "";
     int customerId = int.tryParse(prefs.getString("customer_id") ?? "0") ?? 0;
 
     print(customerId);
-    // TODO: Thay bằng dữ liệu thực tế
     int driverId = 1;
-    int tripId = 1;
+    int tripId = int.parse(widget.tripId); // Sử dụng tripId từ widget
 
     if (token.isEmpty || customerId == 0) {
       ScaffoldMessenger.of(context).showSnackBar(

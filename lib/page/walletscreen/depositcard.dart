@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:qr_flutter/qr_flutter.dart';  // Use the necessary import
+import 'package:qr_flutter/qr_flutter.dart'; // Use the necessary import
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sway/mainpage.dart';  // Import SharedPreferences
+import 'package:sway/mainpage.dart'; // Import SharedPreferences
 
 class AddFundsScreen extends StatefulWidget {
   @override
@@ -13,20 +13,24 @@ class AddFundsScreen extends StatefulWidget {
 class _AddFundsScreenState extends State<AddFundsScreen> {
   String? selectedPaymentMethod = 'PayOS';
   TextEditingController amountController = TextEditingController();
-  String qrData = '';  // Biến lưu trữ dữ liệu cho mã QR
-  bool isLoading = false;  // Trạng thái đang tải
+  String qrData = ''; // Biến lưu trữ dữ liệu cho mã QR
+  bool isLoading = false; // Trạng thái đang tải
 
   Future<void> depositFunds() async {
     final amountText = amountController.text;
     double? amount = double.tryParse(amountText);
 
-    if (amount == null || amount <= 0 || amount < 0.01 || amount > 10000000000) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Số tiền không hợp lệ.')));
+    if (amount == null ||
+        amount <= 0 ||
+        amount < 0.01 ||
+        amount > 10000000000) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Số tiền không hợp lệ.')));
       return;
     }
 
     setState(() {
-      isLoading = true;  // Bắt đầu tải khi người dùng nhấn xác nhận
+      isLoading = true; // Bắt đầu tải khi người dùng nhấn xác nhận
     });
 
     try {
@@ -34,9 +38,10 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
       String? token = prefs.getString('token');
 
       if (token == null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Token không hợp lệ')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Token không hợp lệ')));
         setState(() {
-          isLoading = false;  // Dừng tải nếu không có token
+          isLoading = false; // Dừng tải nếu không có token
         });
         return;
       }
@@ -60,19 +65,21 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
         String qrCode = data['paymentResponse']['qrCode'];
         setState(() {
           qrData = qrCode;
-          isLoading = false;  // Dừng tải sau khi nhận dữ liệu
+          isLoading = false; // Dừng tải sau khi nhận dữ liệu
         });
       } else {
         final data = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Lỗi xảy ra')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? 'Lỗi xảy ra')));
         setState(() {
-          isLoading = false;  // Dừng tải nếu có lỗi
+          isLoading = false; // Dừng tải nếu có lỗi
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Không thể kết nối đến server')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể kết nối đến server')));
       setState(() {
-        isLoading = false;  // Dừng tải nếu gặp lỗi
+        isLoading = false; // Dừng tải nếu gặp lỗi
       });
     }
   }
@@ -137,7 +144,9 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: selectedPaymentMethod == 'PayOS' ? Colors.white : Colors.transparent,
+                      color: selectedPaymentMethod == 'PayOS'
+                          ? Colors.white
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: RadioListTile<String>(
@@ -201,15 +210,17 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
               onPressed: isLoading
                   ? null
                   : qrData.isEmpty
-                      ? depositFunds  // Nếu chưa có mã QR, gọi hàm depositFunds
+                      ? depositFunds // Nếu chưa có mã QR, gọi hàm depositFunds
                       : () {
                           // Hiển thị pop-up với thông điệp
                           showDialog(
                             context: context,
-                            barrierDismissible: false,  // Không thể đóng pop-up bằng cách nhấn bên ngoài
+                            barrierDismissible:
+                                false, // Không thể đóng pop-up bằng cách nhấn bên ngoài
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                backgroundColor: Colors.white,  // Đặt nền của dialog thành màu trắng
+                                backgroundColor: Colors
+                                    .white, // Đặt nền của dialog thành màu trắng
                                 title: Text(
                                   'Thông báo',
                                   style: TextStyle(color: Colors.black),
@@ -226,23 +237,27 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
                                 actions: [
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFFEDAE10),  // Màu nút giống màu "Xác nhận"
-                                      minimumSize: Size(double.infinity, 50),  // Đảm bảo kích thước nút giống nhau
+                                      backgroundColor: Color(
+                                          0xFFEDAE10), // Màu nút giống màu "Xác nhận"
+                                      minimumSize: Size(double.infinity,
+                                          50), // Đảm bảo kích thước nút giống nhau
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),  // Bo góc nút
+                                        borderRadius: BorderRadius.circular(
+                                            8), // Bo góc nút
                                       ),
                                     ),
                                     onPressed: () {
                                       // Chuyển đến Mainpage và thay thế màn hình hiện tại
                                       Navigator.pushReplacement(
                                         context,
-                                        MaterialPageRoute(builder: (context) => Mainpage()),
+                                        MaterialPageRoute(
+                                            builder: (context) => Mainpage()),
                                       );
                                     },
                                     child: Text(
                                       'Quay về trang chủ',
                                       style: TextStyle(
-                                        color: Colors.white,  // Màu chữ trắng
+                                        color: Colors.white, // Màu chữ trắng
                                         fontSize: 16,
                                       ),
                                     ),
@@ -255,15 +270,15 @@ class _AddFundsScreenState extends State<AddFundsScreen> {
               child: isLoading
                   ? CircularProgressIndicator(color: Colors.white)
                   : Text(
-                      qrData.isEmpty ? "Xác nhận" : "Hoàn tất thanh toán",  // Hiển thị tên nút thay đổi
+                      qrData.isEmpty
+                          ? "Xác nhận"
+                          : "Hoàn tất thanh toán", // Hiển thị tên nút thay đổi
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                       ),
                     ),
             ),
-
-
             const SizedBox(height: 20),
           ],
         ),

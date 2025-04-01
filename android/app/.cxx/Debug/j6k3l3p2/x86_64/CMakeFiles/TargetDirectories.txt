@@ -1,0 +1,2 @@
+C:/Users/Dell/Desktop/fn_sway/android/app/.cxx/Debug/j6k3l3p2/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Dell/Desktop/fn_sway/android/app/.cxx/Debug/j6k3l3p2/x86_64/CMakeFiles/rebuild_cache.dir

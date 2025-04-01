@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Message {
   final String text;
@@ -17,7 +18,12 @@ class Message {
 }
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String driverId;
+
+  const ChatScreen({
+    Key? key,
+    required this.driverId,
+  }) : super(key: key);
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -34,7 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
     connectSocket();
   }
 
-    void connectSocket() {
+  void connectSocket() {
     socket = io.io('ws://10.0.2.2:5000', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': true,
@@ -49,12 +55,12 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     socket.on('message', (data) {
-      print("Received message: $data"); 
+      print("Received message: $data");
       setState(() {
         messages.add(Message(
           text: data['content'],
           isMe: data['senderType'] == 'CUSTOMER',
-          time: formatTime(data['timestamp']), 
+          time: formatTime(data['timestamp']),
         ));
       });
     });
@@ -62,26 +68,51 @@ class _ChatScreenState extends State<ChatScreen> {
     socket.onDisconnect((_) => print('Disconnected from WebSocket'));
   }
 
-    String formatTime(String timestamp) {
-      DateTime dateTime = DateTime.parse(timestamp).toUtc().add(Duration(hours: 7)); 
-      String formattedTime = DateFormat('h:mm a').format(dateTime);
-      return formattedTime;
+  String formatTime(String timestamp) {
+    DateTime dateTime =
+        DateTime.parse(timestamp).toUtc().add(Duration(hours: 7));
+    String formattedTime = DateFormat('h:mm a').format(dateTime);
+    return formattedTime;
+  }
+
+  void sendMessage() async {
+    final message = _messageController.text.trim(); // Lưu ngay từ đầu
+
+    if (message.isEmpty) {
+      print("Message is empty!");
+      return;
     }
 
-    void sendMessage() {
-    if (_messageController.text.isNotEmpty) {
-      final message = _messageController.text;
+    final prefs = await SharedPreferences.getInstance();
+    String? customerIdString = prefs.getString("customer_id");
 
-      socket.emit('new message', {
-        'tripId': 6,
-        'driverId': 4,
-        'customerId': 4,
-        'senderType': 'CUSTOMER',
-        'content': message,
-      });
-
-      _messageController.clear();
+    if (customerIdString == null || customerIdString.isEmpty) {
+      print("Customer ID not found in SharedPreferences!");
+      return;
     }
+
+    int? customerId = int.tryParse(customerIdString);
+    if (customerId == null) {
+      print("Invalid Customer ID: $customerIdString");
+      return;
+    }
+
+    int? driverId = int.tryParse(widget.driverId.toString());
+    if (driverId == null) {
+      print("Invalid Driver ID: ${widget.driverId}");
+      return;
+    }
+
+    // Gửi tin nhắn với nội dung đã lưu
+    socket.emit('new message', {
+      'driverId': driverId,
+      'customerId': customerId,
+      'senderType': 'CUSTOMER',
+      'content':
+          message, // Dùng biến đã lưu thay vì gọi lại _messageController.text
+    });
+
+    _messageController.clear();
   }
 
   @override
@@ -110,7 +141,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 final message = messages[index];
 
                 // Kiểm tra có hiển thị avatar không
-                final bool showAvatar = index == 0 || messages[index - 1].isMe != message.isMe;
+                final bool showAvatar =
+                    index == 0 || messages[index - 1].isMe != message.isMe;
 
                 return _buildMessageBubble(message, showAvatar: showAvatar);
               },
@@ -127,7 +159,7 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment:
-        message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            message.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!message.isMe) ...[
@@ -139,10 +171,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 : const SizedBox(width: 32),
             const SizedBox(width: 8),
           ],
-          
           Column(
-            crossAxisAlignment:
-                message.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: message.isMe
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -177,11 +209,10 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-
   Widget _buildMessageInput() {
     return Padding(
-        padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
-        child: Container(
+      padding: const EdgeInsets.fromLTRB(8, 16, 8, 20),
+      child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.black,
@@ -218,9 +249,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     IconButton(
                       icon: const Icon(Icons.emoji_emotions_outlined,
                           color: Colors.grey),
-                      onPressed: () {
-                        
-                      },
+                      onPressed: () {},
                     ),
                   ],
                 ),

@@ -69,11 +69,10 @@ class _MapPickerState extends State<MapPicker> {
         if (kmDistance <= searchRadius) {
           markers.add(
             Marker(
-              point: driverLocation,
-              width: 40,
-              height: 40,
-              child: xemay_icon
-            ),
+                point: driverLocation,
+                width: 40,
+                height: 40,
+                child: xemay_icon),
           );
         }
       }
@@ -239,8 +238,8 @@ class _MapPickerState extends State<MapPicker> {
 
           // Pin
           Center(
-  child: _isMoving ? pinoff_icon : pin_icon,
-) ,
+            child: _isMoving ? pinoff_icon : pin_icon,
+          ),
 
           // Thông tin đia chỉ
           Positioned(
@@ -255,14 +254,14 @@ class _MapPickerState extends State<MapPicker> {
               ),
               child: Column(
                 children: [
-
-                  // Ô THÔNG TIN ĐỊNH VỊ 
+                  // Ô THÔNG TIN ĐỊNH VỊ
                   TextField(
                     readOnly: true,
                     controller: _addressController,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.location_pin, color: primary),
+                      prefixIcon:
+                          const Icon(Icons.location_pin, color: primary),
                       hintText: "Địa chỉ của bạn",
                       hintStyle: const TextStyle(color: Colors.white70),
                       filled: true,

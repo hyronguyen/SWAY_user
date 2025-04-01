@@ -13,27 +13,28 @@ class SignupEmailVerifyScreen extends StatefulWidget {
   });
 
   @override
-  State<SignupEmailVerifyScreen> createState() => _SignupEmailVerifyScreenState();
+  State<SignupEmailVerifyScreen> createState() =>
+      _SignupEmailVerifyScreenState();
 }
 
 class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
   TextEditingController otpController = TextEditingController();
   final CommonMethods commonMethods = CommonMethods();
-  String? verificationId; 
+  String? verificationId;
   Timer? _timer;
-  int _start = 300; 
+  int _start = 300;
   bool canResendOtp = false;
-  final UserController userController = UserController(); 
+  final UserController userController = UserController();
 
   @override
   void initState() {
     super.initState();
-    _startTimer(); 
+    _startTimer();
   }
 
   @override
   Widget build(BuildContext context) {
-    String formattedTime = _formatTime(_start); 
+    String formattedTime = _formatTime(_start);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Xác thực Email'), centerTitle: true),
@@ -84,7 +85,9 @@ class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
                       onPressed: canResendOtp ? resendEmailVerification : null,
                       child: Text(
                         "Gửi lại mã xác thực",
-                        style: TextStyle(fontSize: 16, color: canResendOtp ? Colors.white : Colors.grey),
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: canResendOtp ? Colors.white : Colors.grey),
                       ),
                     ),
                   ],
@@ -95,11 +98,13 @@ class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
                 ElevatedButton(
                   onPressed: verifyEmail,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 12),
                     backgroundColor: Color(0xFFedae10), // Đổi màu nền nút
                     foregroundColor: Colors.white, // Đổi màu chữ trên nút
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), // Bo tròn viền nút
+                      borderRadius:
+                          BorderRadius.circular(12), // Bo tròn viền nút
                     ),
                   ),
                   child: const Text("Xác nhận", style: TextStyle(fontSize: 18)),
@@ -112,7 +117,6 @@ class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
       ),
     );
   }
-
 
   Future<void> verifyEmail() async {
     String otp = otpController.text.trim();
@@ -137,20 +141,22 @@ class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
       // Chuyển hướng đến trang tiếp theo sau khi xác thực thành công
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()), // Thay NextScreen() bằng trang bạn muốn chuyển đến
+        MaterialPageRoute(
+            builder: (context) =>
+                LoginScreen()), // Thay NextScreen() bằng trang bạn muốn chuyển đến
       );
     } else {
       // Nếu mã OTP sai, hiển thị thông báo lỗi
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Mã xác thực không đúng. Vui lòng thử lại.")),
+        const SnackBar(
+            content: Text("Mã xác thực không đúng. Vui lòng thử lại.")),
       );
     }
   }
 
-
   Future<void> resendEmailVerification() async {
     bool signupSuccess = await userController.resendOtp(widget.email);
-    
+
     if (signupSuccess) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Mã xác thực đã được gửi lại qua email!")),
@@ -158,7 +164,7 @@ class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
       setState(() {
         canResendOtp = false;
       });
-      _startTimer();  // Reset lại đồng hồ đếm ngược
+      _startTimer(); // Reset lại đồng hồ đếm ngược
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Đã xảy ra lỗi khi gửi mã OTP.")),
@@ -168,14 +174,14 @@ class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
 
   void _startTimer() {
     const oneSec = Duration(seconds: 1);
-    _start = 300; 
+    _start = 300;
 
     _timer = Timer.periodic(oneSec, (timer) {
       if (_start == 0) {
         setState(() {
-          canResendOtp = true; 
+          canResendOtp = true;
         });
-        timer.cancel(); 
+        timer.cancel();
       } else {
         setState(() {
           _start--;
@@ -193,6 +199,6 @@ class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
   @override
   void dispose() {
     super.dispose();
-    _timer?.cancel(); 
+    _timer?.cancel();
   }
 }

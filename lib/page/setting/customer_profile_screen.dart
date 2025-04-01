@@ -34,7 +34,8 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
       return;
     }
 
-    final String formattedToken = token.startsWith("Bearer ") ? token : "Bearer $token";
+    final String formattedToken =
+        token.startsWith("Bearer ") ? token : "Bearer $token";
 
     final Uri url = Uri.http(
       "10.0.2.2:8080",
@@ -81,12 +82,13 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
   void _editProfile() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => EditProfileScreen(
-        name: _nameController.text,
-        phone: _phoneController.text,
-        birthday: _birthdayController.text,
-        gender: selectedGender,
-      )),
+      MaterialPageRoute(
+          builder: (context) => EditProfileScreen(
+                name: _nameController.text,
+                phone: _phoneController.text,
+                birthday: _birthdayController.text,
+                gender: selectedGender,
+              )),
     );
   }
 
@@ -96,7 +98,8 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text("Thông tin khách hàng", style: TextStyle(color: Colors.white)),
+        title: const Text("Thông tin khách hàng",
+            style: TextStyle(color: Colors.white)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -122,7 +125,8 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool enabled = true}) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool enabled = true}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextField(
@@ -141,7 +145,8 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
           border: const OutlineInputBorder(),
           filled: true,
           fillColor: Colors.transparent,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         ),
       ),
     );
@@ -185,7 +190,8 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: const Text("Chỉnh sửa thông tin", style: TextStyle(fontSize: 16)),
+        child:
+            const Text("Chỉnh sửa thông tin", style: TextStyle(fontSize: 16)),
       ),
     );
   }

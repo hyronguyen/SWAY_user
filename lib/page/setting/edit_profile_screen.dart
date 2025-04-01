@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sway/Controller/user_controller.dart';
 import 'package:sway/page/setting/customer_profile_screen.dart';
 
-
 class EditProfileScreen extends StatefulWidget {
   final String name;
   final String phone;
@@ -32,94 +31,92 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool isLoading = false; // Trạng thái loading
 
   @override
-void initState() {
-  super.initState();
-  _nameController = TextEditingController(text: widget.name);
-  _phoneController = TextEditingController(text: widget.phone);
-  _birthdayController = TextEditingController(text: widget.birthday);
-  selectedGender = widget.gender;
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.name);
+    _phoneController = TextEditingController(text: widget.phone);
+    _birthdayController = TextEditingController(text: widget.birthday);
+    selectedGender = widget.gender;
 
-  _checkSharedPreferences(); // Debug thông tin đã lưu
-}
+    _checkSharedPreferences(); // Debug thông tin đã lưu
+  }
 
-void _checkSharedPreferences() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? customerId = prefs.getString('customer_id');
-  String? token = prefs.getString('token');
+  void _checkSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? customerId = prefs.getString('customer_id');
+    String? token = prefs.getString('token');
 
-  print("DEBUG: Customer ID: $customerId");
-  print("DEBUG: Token: $token");
-}
-
-
-
+    print("DEBUG: Customer ID: $customerId");
+    print("DEBUG: Token: $token");
+  }
 
   void _saveChanges() async {
-  String updatedName = _nameController.text.trim();
-  String updatedPhone = _phoneController.text.trim();
-  String updatedBirthday = _birthdayController.text.trim();
-  String updatedGender = selectedGender;
+    String updatedName = _nameController.text.trim();
+    String updatedPhone = _phoneController.text.trim();
+    String updatedBirthday = _birthdayController.text.trim();
+    String updatedGender = selectedGender;
 
-  setState(() {
-    isLoading = true;
-  });
+    setState(() {
+      isLoading = true;
+    });
 
-  // ✅ Lấy customerId và token từ SharedPreferences
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? customerId = prefs.getString('customer_id');
-  String? token = prefs.getString('token');
+    // ✅ Lấy customerId và token từ SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? customerId = prefs.getString('customer_id');
+    String? token = prefs.getString('token');
 
-  // ✅ Kiểm tra nếu không có token hoặc customerId
-  if (customerId == null || token == null || token.isEmpty) {
-    print("❌ DEBUG: Không tìm thấy token hoặc customer_id trong SharedPreferences.");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại!")),
+    // ✅ Kiểm tra nếu không có token hoặc customerId
+    if (customerId == null || token == null || token.isEmpty) {
+      print(
+          "❌ DEBUG: Không tìm thấy token hoặc customer_id trong SharedPreferences.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại!")),
+      );
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    // ✅ Đảm bảo token có prefix "Bearer "
+    String authToken = token.startsWith("Bearer ") ? token : "Bearer $token";
+
+    print("✅ DEBUG: Customer ID = $customerId");
+    print("✅ DEBUG: Token trước khi gửi = $authToken");
+
+    // 🟢 Gọi API thông qua UserController
+    bool success = await UserController().updateCustomerInfo(
+      customerId,
+      updatedName,
+      updatedPhone,
+      updatedBirthday,
+      updatedGender,
+      authToken, // ✅ Đảm bảo gửi token đúng
     );
+
     setState(() {
       isLoading = false;
     });
-    return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cập nhật thông tin thành công!")),
+      );
+      // Chuyển về màn hình hiển thị thông tin khách hàng (ProfileScreen)
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CustomerProfileScreen(),
+        ),
+      ); // Đảm bảo '/profile' có trong routes
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cập nhật thất bại. Vui lòng thử lại!")),
+      );
+    }
   }
-
-  // ✅ Đảm bảo token có prefix "Bearer "
-  String authToken = token.startsWith("Bearer ") ? token : "Bearer $token";
-
-  print("✅ DEBUG: Customer ID = $customerId");
-  print("✅ DEBUG: Token trước khi gửi = $authToken");
-
-  // 🟢 Gọi API thông qua UserController
-  bool success = await UserController().updateCustomerInfo(
-    customerId,
-    updatedName,
-    updatedPhone,
-    updatedBirthday,
-    updatedGender,
-    authToken, // ✅ Đảm bảo gửi token đúng
-  );
-
-  setState(() {
-    isLoading = false;
-  });
-
-  if (success) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Cập nhật thông tin thành công!")),
-    );
-     // Chuyển về màn hình hiển thị thông tin khách hàng (ProfileScreen)
-    Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-    builder: (context) => CustomerProfileScreen(), 
-  ),
-); // Đảm bảo '/profile' có trong routes
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Cập nhật thất bại. Vui lòng thử lại!")),
-    );
-  }
-}
-
-
 
   /// Widget hiển thị ô nhập thông tin
   Widget _buildTextField(String label, TextEditingController controller) {
@@ -137,7 +134,8 @@ void _checkSharedPreferences() async {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         ),
       ),
     );
@@ -160,7 +158,8 @@ void _checkSharedPreferences() async {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         ),
         items: ["MALE", "FEMALE", "OTHER"].map((gender) {
           return DropdownMenuItem(
@@ -186,15 +185,18 @@ void _checkSharedPreferences() async {
             onPressed: isLoading ? null : _saveChanges,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: isLoading
                 ? const SizedBox(
                     height: 24,
                     width: 24,
-                    child: CircularProgressIndicator(color: Colors.black, strokeWidth: 3),
+                    child: CircularProgressIndicator(
+                        color: Colors.black, strokeWidth: 3),
                   )
-                : const Text("Lưu", style: TextStyle(fontSize: 16, color: Colors.black)),
+                : const Text("Lưu",
+                    style: TextStyle(fontSize: 16, color: Colors.black)),
           ),
         ),
         const SizedBox(width: 10),
@@ -203,9 +205,11 @@ void _checkSharedPreferences() async {
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey[700],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text("Hủy", style: TextStyle(fontSize: 16, color: Colors.white)),
+            child: const Text("Hủy",
+                style: TextStyle(fontSize: 16, color: Colors.white)),
           ),
         ),
       ],
