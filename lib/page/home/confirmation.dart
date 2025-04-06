@@ -21,6 +21,7 @@ class Confirmation extends StatefulWidget {
   final LatLng destinationLocation;
   final String vehicleType;
   final String customer_id;
+  final currencyFormatter = NumberFormat("#,###", "vi_VN");
   final String selectedPaymentMethod = "Tiền mặt";
 
 ///////////////////////////////// CONTRUCTOR ////////////////////////////////////////
@@ -65,13 +66,22 @@ class _ConfirmationState extends State<Confirmation> {
       "icon": "assets/icon/tietkiem.png"
     },
   ];
+  final Map<String, Map<String, double>> fareRates = {
+    "xemay": {"base": km_xemay, "extra": above_km_xemay},
+    "tietkiem": {"base": km_tietkiem, "extra": above_km_tietkiem},
+    "4cho": {"base": km_4cho, "extra": above_km_4cho},
+    "luxury": {"base": km_luxury, "extra": above_km_luxury},
+  };
+  final currencyFormatter = NumberFormat("#,###", "vi_VN");
 
   final MapController _mapController = MapController(); // Điều khiển bản đồ
   String _selectedPaymentMethod = 'Tiền mặt'; // Phương thức thanh toán
   String weatherCondition = "Đang tải..."; // Thông tin thời tiết
   double weatherFee = 0; // Phí thời tiết
   double fare = 0; // Tiền cước
-  String? selectedVehicle = "xemay";
+  String selectedVehicle = "";
+  String selectedFare = "";
+  String selectedVehicleName = "";
   bool isEnteringPromoCode = false;
   TextEditingController promoCodeController = TextEditingController();
 
@@ -93,9 +103,26 @@ class _ConfirmationState extends State<Confirmation> {
     });
   }
 
-  void _selectVehicle(String id) {
+  void _selectVehicle(Map<String, dynamic> vehicle) {
+    if (vehicle.isEmpty) return; // Nếu xe rỗng thì thoát luôn tránh lỗi
+
     setState(() {
-      selectedVehicle = id;
+      selectedVehicle = vehicle['id']?.toString() ?? "";
+      selectedVehicleName = vehicle["name"]?.toString() ?? "";
+      selectedFare = vehicle["price"]?.toString() ?? "";
+
+      double distance =
+          _calculateDistance(widget.pickupLocation, widget.destinationLocation);
+
+      if (selectedVehicle.isNotEmpty &&
+          fareRates.containsKey(selectedVehicle)) {
+        fare = _calculateFare(distance, selectedVehicle) + weatherFee;
+      } else {
+        fare =
+            0; // Nếu không chọn xe hoặc xe không có trong fareRates, set giá về 0
+        print(
+            "🚨 Lỗi: Vehicle ID không hợp lệ hoặc không có trong fareRates: $selectedVehicle");
+      }
     });
   }
 
@@ -195,12 +222,9 @@ class _ConfirmationState extends State<Confirmation> {
                         widget.vehicleType, Colors.blue),
 
                     // Phí cước + phí thời tiết
-                    _buildDetailRow(
-                        Icons.attach_money,
-                        "Giá cước",
-                        "${formatCurrency(fare)} + phí thời tiết: ${formatCurrency(weatherFee)}",
-                        Colors.orange),
-
+                    //giá tiền
+                    _buildDetailRow(Icons.attach_money, "Giá cước",
+                        "${formatCurrency(fare + weatherFee)}", Colors.orange),
                     // Phương thức thanh toán
                     _buildDetailRow(Icons.payment, "Thanh toán",
                         _selectedPaymentMethod, Colors.purple),
@@ -260,19 +284,26 @@ class _ConfirmationState extends State<Confirmation> {
     return Distance().as(LengthUnit.Kilometer, start, end);
   }
 
-  // Tính tiền cước
-  double _calculateFare(double km, String vehicleType) {
-    if (vehicleType == 'xemay') {
-      return km <= 3 ? km_xemay : km_xemay + (km - 3) * above_km_xemay;
-    } else if (vehicleType == 'tietkiem') {
-      return km <= 3 ? km_tietkiem : km_tietkiem + (km - 3) * above_km_tietkiem;
-    } else if (vehicleType == 'luxury') {
-      return km <= 3 ? km_luxury : km_luxury + (km - 3) * above_km_luxury;
-    } else if (vehicleType == '4cho') {
-      return km <= 3 ? km_4cho : km_4cho + (km - 3) * above_km_4cho;
-    } else {
-      throw ArgumentError('Invalid vehicle type: $vehicleType');
+  double _calculateFare(double km, String vehicleId) {
+    print("🚗 Vehicle ID hiện tại: '$vehicleId'");
+
+    if (vehicleId.isEmpty) {
+      print("🚨 Lỗi: Vehicle ID không được rỗng!");
+      throw ArgumentError("Vehicle ID cannot be empty");
     }
+
+    if (!fareRates.containsKey(vehicleId)) {
+      print("❌ Lỗi: Vehicle ID không hợp lệ: $vehicleId");
+      print("📌 Các ID hợp lệ: ${fareRates.keys.toList()}");
+      throw ArgumentError("Invalid vehicle id: $vehicleId");
+    }
+
+    final baseFare = fareRates[vehicleId]!["base"]!;
+    final extraFare = fareRates[vehicleId]!["extra"]!;
+    double totalFare = km <= 1 ? baseFare : baseFare + (km - 1) * extraFare;
+
+    print("✅ Giá tính toán: $totalFare cho phương tiện: $vehicleId");
+    return totalFare;
   }
 
   // Lấy thôn tin thời tiết
@@ -900,31 +931,34 @@ class _ConfirmationState extends State<Confirmation> {
                           children: [
                             InkWell(
                               onTap: () {
-                                _selectVehicle(vehicle["id"]);
+                                _selectVehicle(vehicle);
                               },
                               child: Container(
-                                color: selectedVehicle == vehicle["id"]
-                                    ? Colors.grey[900]
-                                    : Colors.transparent, // Màu nền khi chọn
+                                decoration: BoxDecoration(
+                                  color: selectedVehicle == vehicle["id"]
+                                      ? Colors.grey[900]
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16.0, vertical: 12.0),
                                 child: Row(
                                   children: [
                                     Image.asset(vehicle["icon"],
                                         width: 30, height: 30),
-                                    SizedBox(width: 16),
+                                    const SizedBox(width: 16),
                                     Expanded(
                                       child: Text(
                                         vehicle["name"],
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white),
                                       ),
                                     ),
                                     Text(
-                                      vehicle["price"],
-                                      style: TextStyle(
+                                      "${currencyFormatter.format(_calculateFare(_calculateDistance(widget.pickupLocation, widget.destinationLocation), vehicle["id"]))} đ",
+                                      style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white),

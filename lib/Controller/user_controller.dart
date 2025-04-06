@@ -74,11 +74,7 @@ class UserController {
     final String url =
         'http://10.0.2.2:8080/api/UserManagement/get-information-customer';
 
-    // Kiểm tra token có bị trùng "Bearer " hay không
-    if (!token.startsWith("Bearer ")) {
-      token = "$token"; // Chỉ thêm "Bearer " nếu chưa có
-    }
-
+  
     print("Token gửi đi: $token"); // Debug để kiểm tra token đúng chưa
 
     final response = await http.get(

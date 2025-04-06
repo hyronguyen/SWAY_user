@@ -39,7 +39,7 @@ class _CustomerProfileScreenState extends State<CustomerProfileScreen> {
 
     final Uri url = Uri.http(
       "10.0.2.2:8080",
-      "/api/UserManagement/get-infomation-customer",
+      "/api/UserManagement/get-information-customer",
       {"customer_id": customerId},
     );
 

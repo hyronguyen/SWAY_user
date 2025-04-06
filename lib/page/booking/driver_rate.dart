@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sway/mainpage.dart';
 import '../../controller/user_controller.dart'; // đường dẫn phù hợp với project bạn
 
 class DriverRatingScreen extends StatefulWidget {
   final String tripId; // Thêm tripId vào constructor
 
-  const DriverRatingScreen({super.key, required this.tripId}); // Nhận tripId trong constructor
+  const DriverRatingScreen(
+      {super.key, required this.tripId}); // Nhận tripId trong constructor
 
   @override
   State<DriverRatingScreen> createState() => _DriverRatingScreenState();
@@ -217,11 +219,19 @@ class _DriverRatingScreenState extends State<DriverRatingScreen> {
           content: const Text("Bạn đã đánh giá tài xế thành công!"),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Mainpage()));
+              },
               child: const Text("Đóng"),
             )
           ],
         ),
+      );
+    } else if (success == false) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Đánh giá đã tồn tại, vui lòng thử lại.")),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
